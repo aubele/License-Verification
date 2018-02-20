@@ -99,7 +99,7 @@ Player::Player(QWidget *parent)
 
 //! [create-objs]
     player = new QMediaPlayer(this);
-    // owned by PlaylistModel 
+    // owned by PlaylistModel
     playlist = new QMediaPlaylist();
     player->setPlaylist(playlist);
 //! [create-objs]
