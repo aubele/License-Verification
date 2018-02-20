@@ -48,105 +48,22 @@
 **
 ****************************************************************************/
 
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef VIDEOWIDGET_H
+#define VIDEOWIDGET_H
 
-#include "videowidget.h"
+#include <QVideoWidget>
 
-#include <QWidget>
-#include <QMediaPlayer>
-#include <QMediaPlaylist>
-
-QT_BEGIN_NAMESPACE
-class QAbstractItemView;
-class QLabel;
-class QMediaPlayer;
-class QModelIndex;
-class QPushButton;
-class QSlider;
-class QVideoProbe;
-class QVideoWidget;
-class QAudioProbe;
-QT_END_NAMESPACE
-
-class PlaylistModel;
-class HistogramWidget;
-
-class Player : public QWidget
+class VideoWidget : public QVideoWidget
 {
     Q_OBJECT
 
 public:
-    Player(QWidget *parent = 0);
-    ~Player();
+    VideoWidget(QWidget *parent = 0);
 
-    bool isPlayerAvailable() const;
-
-    void addToPlaylist(const QList<QUrl> urls);
-
-signals:
-    void fullScreenChanged(bool fullScreen);
-
-private slots:
-    void open();
-    void durationChanged(qint64 duration);
-    void positionChanged(qint64 progress);
-    void metaDataChanged();
-
-    void previousClicked();
-
-    void seek(int seconds);
-    void jump(const QModelIndex &index);
-    void playlistPositionChanged(int);
-
-    void statusChanged(QMediaPlayer::MediaStatus status);
-    void stateChanged(QMediaPlayer::State state);
-    void bufferingProgress(int progress);
-    void videoAvailableChanged(bool available);
-
-    void displayErrorMessage();
-
-    void showColorDialog();
-
-private:
-    void clearHistogram();
-    void setTrackInfo(const QString &info);
-    void setStatusInfo(const QString &info);
-    void handleCursor(QMediaPlayer::MediaStatus status);
-    void updateDurationInfo(qint64 currentInfo);
-
-	bool checkDirectory();
-	bool verifySignature(QString licensePath, const char* signaturePath);
-	void setLicenseFilePath(QString licenseFilePath);
-	void readDataFromLicenseFile(QString licensePath);
-	QString getLicenseFilePath();
-	void setSignatureFilePath(QString signatureFilePath);
-	QString getSignatureFilePath();
-
-    QMediaPlayer *player;
-    QMediaPlaylist *playlist;
-    VideoWidget *videoWidget;
-    QLabel *coverLabel;
-    QSlider *slider;
-    QLabel *labelDuration;
-    QPushButton *fullScreenButton;
-    QPushButton *colorButton;
-    QDialog *colorDialog;
-
-    QLabel *labelHistogram;
-    HistogramWidget *videoHistogram;
-    HistogramWidget *audioHistogram;
-    QVideoProbe *videoProbe;
-    QAudioProbe *audioProbe;
-
-    PlaylistModel *playlistModel;
-    QAbstractItemView *playlistView;
-    QString trackInfo;
-    QString statusInfo;
-    qint64 duration;
-
-	QString licenseFilePath;
-	QString signatureFilePath;
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
 };
 
-#endif // PLAYER_H
+#endif // VIDEOWIDGET_H
