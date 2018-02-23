@@ -1,10 +1,12 @@
 firstName : Fabio
 lastName : Aubele
-email : fabioaubele95@hotmail.de
+email : fabaub@gmail.com
 company : privat
-mac : 60:A4:4C:2F:8F:42
-features : fullscreen,speed,color,histogram
+mac : 60:A4:4C:2F:8F:40
+fullScreen : 1
+speed : 1
+color : 1
+histogram : 1
 duration : 12
-expirationDate : 20.02.2019
-customerNumber : 99335
-
+expirationDate : 21.02.2019
+customerNumber : 96245

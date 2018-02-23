@@ -1,7 +1,6 @@
 #include "LicenseModel.h"
 
 
-
 LicenseModel::LicenseModel()
 {
 }
@@ -97,19 +96,69 @@ void LicenseModel::setMac(const QString& mac)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-const QStringList& LicenseModel::getFeatures()
+bool LicenseModel::getFeatureFullScreen()
 {
-	return features;
+	return featureFullScreen;
 }
 
-const QString LicenseModel::getKeyWordFeature()
+const QString LicenseModel::getKeyWordFullScreen()
 {
-	return "features";
+	return "fullScreen";
 }
 
-void LicenseModel::setFeatures(const QStringList& features)
+void LicenseModel::setFeatureFullScreen(bool fullScreen)
 {
-	this->features = features;
+	this->featureFullScreen = fullScreen;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+bool LicenseModel::getFeatureSpeed()
+{
+	return featureSpeed;
+}
+
+const QString LicenseModel::getKeyWordSpeed()
+{
+	return "speed";
+}
+
+void LicenseModel::setFeatureSpeed(bool speed)
+{
+	this->featureSpeed = speed;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+bool LicenseModel::getFeatureColor()
+{
+	return featureColor;
+}
+
+const QString LicenseModel::getKeyWordColor()
+{
+	return "color";
+}
+
+void LicenseModel::setFeatureColor(bool color)
+{
+	this->featureColor = color;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+bool LicenseModel::getFeatureHistogram()
+{
+	return featureHistogram;
+}
+const QString LicenseModel::getKeyWordHistogram()
+{
+	return "histogram";
+}
+
+void LicenseModel::setFeatureHistogram(bool histogram)
+{
+	this->featureHistogram = histogram;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

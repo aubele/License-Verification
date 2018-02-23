@@ -1,9 +1,7 @@
 #pragma once
 
 #include "QString"
-#include "QStringList"
 #include "QDate"
-
 
 
 class LicenseModel
@@ -32,9 +30,21 @@ public:
 	const QString getKeyWordMac();
 	void setMac(const QString& mac);
 
-	const QStringList& getFeatures();
-	const QString getKeyWordFeature();
-	void setFeatures(const QStringList& firstName);
+	bool getFeatureFullScreen();
+	void setFeatureFullScreen(bool fullScreen);
+	const QString getKeyWordFullScreen();
+
+	bool getFeatureSpeed();
+	void setFeatureSpeed(bool speed);
+	const QString getKeyWordSpeed();
+
+	bool getFeatureColor();
+	void setFeatureColor(bool color);
+	const QString getKeyWordColor();
+
+	bool getFeatureHistogram();
+	void setFeatureHistogram(bool histogram);
+	const QString getKeyWordHistogram();
 
 	int getDuration();
 	const QString getKeyWordDuration();
@@ -54,9 +64,11 @@ private:
 	QString email;
 	QString mac;
 	QString company;
-	QStringList features;
+	bool featureFullScreen;
+	bool featureSpeed;
+	bool featureColor;
+	bool featureHistogram;
 	int duration;
 	QDate expirationDate;
 	QString customerNumber;
-
 };

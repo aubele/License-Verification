@@ -55,6 +55,10 @@
 #include <QCommandLineOption>
 #include <QDir>
 
+#include <exception>
+
+using namespace std;
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
@@ -69,7 +73,17 @@ int main(int argc, char *argv[])
     parser.addPositionalArgument("url", "The URL to open.");
     parser.process(app);
 
-    Player player;
+	Player player;
+
+	try
+	{
+		player.processLicense();
+	}
+	catch (LicenseException& licExcp)
+	{
+		player.showErrorMessageBox("Lizenz", licExcp.what());
+		return 0;
+	}
 
     if (!parser.positionalArguments().isEmpty() && player.isPlayerAvailable()) {
         QList<QUrl> urls;
@@ -77,6 +91,7 @@ int main(int argc, char *argv[])
             urls.append(QUrl::fromUserInput(a, QDir::currentPath(), QUrl::AssumeLocalFile));
         player.addToPlaylist(urls);
     }
+
 
 #if defined(Q_WS_SIMULATOR)
     player.setAttribute(Qt::WA_LockLandscapeOrientation);

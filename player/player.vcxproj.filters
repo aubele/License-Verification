@@ -48,6 +48,9 @@
     <ClCompile Include="LicenseModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LicenseExceptions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="histogramwidget.h">
@@ -112,6 +115,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LicenseModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LicenseExceptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
