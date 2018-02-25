@@ -60,34 +60,18 @@
 #include <QAudioProbe>
 #include <QMediaMetaData>
 #include <QtWidgets>
-#include <QtNetwork>
-#include <QMenu>
-#include <QMenuBar>
-
-// Crypto++ Library
-#ifdef _DEBUG
-#  pragma comment ( lib, "cryptlibd" )
-#else
-#  pragma comment ( lib, "cryptlib" )
-#endif
-
-#include <rsa.h>
-#include <osrng.h>
-#include <base64.h>
-#include <files.h>
 
 using namespace std;
-using namespace CryptoPP;
 
-Player::Player(QWidget *parent)
+Player::Player(LicenseVerification* verification, QWidget *parent)
     : QWidget(parent)
     , videoWidget(0)
     , coverLabel(0)
     , slider(0)
     , colorDialog(0)
-	, licenseMacError(false)
-	, licenseExpirationDateError(false)
+	, verification(verification)
 {
+
 //! [create-objs]
     player = new QMediaPlayer(this);
     // owned by PlaylistModel
@@ -175,9 +159,18 @@ Player::Player(QWidget *parent)
     colorButton->setEnabled(false);
     connect(colorButton, SIGNAL(clicked()), this, SLOT(showColorDialog()));
 
-    QBoxLayout *displayLayout = new QHBoxLayout;
-    displayLayout->addWidget(videoWidget, 2);
-    displayLayout->addWidget(playlistView);
+	QLabel* licenseText = new QLabel;
+	licenseText->setText("Dieses Programm ist lizenziert fuer " + verification->getModelFirstName() + " " + verification->getModelLastName() +
+		", Kundennummer: " + verification->getModelCustomerNumber() + ", Firma: " + verification->getModelCompany() + " | Gueltig bis " + 
+		verification->getModelExpirationDate().toString("dd.MM.yyyy"));
+	licenseText->setAlignment(Qt::AlignLeft);
+
+	QBoxLayout *licenseLayout = new QHBoxLayout;
+	licenseLayout->addWidget(licenseText);
+
+	QBoxLayout *displayLayout = new QHBoxLayout;
+	displayLayout->addWidget(videoWidget, 2);
+	displayLayout->addWidget(playlistView);
 
     QBoxLayout *controlLayout = new QHBoxLayout;
     controlLayout->setMargin(0);
@@ -189,6 +182,7 @@ Player::Player(QWidget *parent)
     controlLayout->addWidget(colorButton);
 
     QBoxLayout *layout = new QVBoxLayout;
+	layout->addLayout(licenseLayout);
     layout->addLayout(displayLayout);
     QHBoxLayout *hLayout = new QHBoxLayout;
     hLayout->addWidget(slider);
@@ -221,77 +215,6 @@ Player::~Player()
 bool Player::isPlayerAvailable() const
 {
     return player->isAvailable();
-}
-
-void Player::setLicenseMacError(bool licenseMacError)
-{
-	this->licenseMacError = licenseMacError;
-}
-
-bool Player::getLicenseMacError()
-{
-	return licenseMacError;
-}
-
-void Player::setLicenseExpirationDateError(bool licenseExpirationDateError)
-{
-	this->licenseExpirationDateError = licenseExpirationDateError;
-}
-
-bool Player::getLicenseExpirationDateError()
-{
-	return licenseExpirationDateError;
-}
-
-void Player::showErrorMessageBox(QString title, QString errorText)
-{
-	QPushButton* licenseHelp = new QPushButton("Help", this);
-	connect(licenseHelp, SIGNAL(clicked()), this, SLOT(onLicenseHelp()));
-	QMessageBox msgBox(QMessageBox::Critical, title, errorText, QMessageBox::Ok);
-	msgBox.addButton(licenseHelp, QMessageBox::HelpRole);
-	msgBox.exec();
-}
-
-// Reads the license file and checks if everything is ok
-// Can throw exceptions
-void Player::processLicense()
-{
-	model = new LicenseModel();
-	bool verification = /*false*/ true;
-	if (checkLicenseFileNumber())
-	{
-		if (checkSignatureFileNumber())
-		{
-			QByteArray signatureFilePath = getSignatureFilePath().toLatin1();
-			const char* cSignatureFilePath = signatureFilePath.data();
-			//verification = verifySignature(getLicenseFilePath(), cSignatureFilePath);
-		}
-		else
-		{
-			throw LicenseSignatureFileNumberException("");
-		}
-	}
-	else
-	{
-		throw LicenseFileNumberException("");
-	}
-
-	if (verification)
-	{
-		readDataFromLicenseFile(getLicenseFilePath());
-		if (!checkMacAdress())
-		{
-			throw LicenseMacAdressException("");
-		}
-		if (!checkExpirationDate())
-		{
-			throw LicenseExpirationDateException("");
-		}
-	}
-	else
-	{
-		throw LicenseSignatureException("");
-	}
 }
 
 void Player::open()
@@ -540,228 +463,8 @@ void Player::showColorDialog()
     colorDialog->show();
 }
 
-void Player::onLicenseHelp()
-{
-	QString path = QDir::currentPath();
-	path.append("/LicenseHelp.pdf");
-	QDesktopServices::openUrl(QUrl::fromLocalFile(path));
-}
-
 void Player::clearHistogram()
 {
     QMetaObject::invokeMethod(videoHistogram, "processFrame", Qt::QueuedConnection, Q_ARG(QVideoFrame, QVideoFrame()));
     QMetaObject::invokeMethod(audioHistogram, "processBuffer", Qt::QueuedConnection, Q_ARG(QAudioBuffer, QAudioBuffer()));
-}
-
-
-bool Player::checkLicenseFileNumber()
-{
-	int counterLicenseFile = 0;
-	QDirIterator itLic("lic", QStringList() << "*.lic", QDir::Files | QDir::NoDotAndDotDot | QDir::Readable | QDir::NoSymLinks);
-	while (itLic.hasNext())
-	{
-		setLicenseFilePath(itLic.next());
-		counterLicenseFile++;
-	}
-	if (counterLicenseFile == 1)
-	{
-		return true;
-	}
-	return false;
-}
-
-
-bool Player::checkSignatureFileNumber()
-{
-	int counterSignature = 0;
-	QDirIterator itSig("lic", QStringList() << "*.dat", QDir::Files | QDir::NoDotAndDotDot | QDir::Readable);
-	while (itSig.hasNext())
-	{
-		setSignatureFilePath(itSig.next());
-		counterSignature++;
-	}
-	if (counterSignature == 1)
-	{
-		return true;
-	}
-	return false;
-}
-
-
-bool Player::verifySignature(QString licensePath, const char* signaturePath)
-{
-	// Read public key
-	CryptoPP::ByteQueue bytes;
-	FileSource file("pubkey.txt", true, new Base64Decoder);
-	file.TransferTo(bytes);
-	bytes.MessageEnd();
-	RSA::PublicKey pubKey;
-	pubKey.Load(bytes);
-
-	RSASSA_PKCS1v15_SHA_Verifier verifier(pubKey);
-
-	// Read signed message
-	QFile licenseFile(licensePath);
-	if (!licenseFile.open(QIODevice::ReadOnly | QIODevice::Text))
-		return false;
-	QTextStream in(&licenseFile);
-	string licenseData = in.readAll().toStdString();
-
-	// Read signation
-	string signature;
-	FileSource(signaturePath, true, new StringSink(signature));
-
-	string combined(licenseData);
-	combined.append(signature);
-
-	// Verify signature
-	try
-	{
-		StringSource(combined, true,
-			new SignatureVerificationFilter(
-				verifier, NULL,
-				SignatureVerificationFilter::THROW_EXCEPTION
-			)
-		);
-		qDebug() << "Signature OK" << endl;
-		return true;
-	}
-	catch (SignatureVerificationFilter::SignatureVerificationFailed &err)
-	{
-		qDebug() << err.what() << endl;
-		return false;
-	}
-
-	return false;
-}
-
-void Player::readDataFromLicenseFile(QString licenseFilePath)
-{
-	QFile file(licenseFilePath);
-	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-		return;
-
-	QTextStream in(&file);
-	while (!in.atEnd())
-	{
-		QString line = in.readLine();
-		if (line != "" && line != "\n")
-		{
-			QStringList split = line.split(" : ");
-			if (split.length() == 2)
-			{
-				QString keyword = split[0];
-				QString value = split[1];
-
-				// Not a good style but necessary
-				if (keyword == model->getKeyWordFirstName())
-				{
-					model->setFirstName(value);
-				}
-				else if (keyword == model->getKeyWordLastName())
-				{
-					model->setLastName(value);
-				}
-				else if (keyword == model->getKeyWordEmail())
-				{
-					model->setEmail(value);
-				}
-				else if (keyword == model->getKeyWordCompany())
-				{
-					model->setCompany(value);
-				}
-				else if (keyword == model->getKeyWordMac())
-				{
-					model->setMac(value);
-				}
-				else if (keyword == model->getKeyWordFullScreen())
-				{
-					// Cast to bool
-					model->setFeatureFullScreen(value.toInt());
-				}
-				else if (keyword == model->getKeyWordSpeed())
-				{
-					// Cast to bool
-					model->setFeatureSpeed(value.toInt());
-				}
-				else if (keyword == model->getKeyWordColor())
-				{
-					// Cast to bool
-					model->setFeatureColor(value.toInt());
-				}
-				else if (keyword == model->getKeyWordHistogram())
-				{
-					// Cast to bool
-					model->setFeatureHistogram(value.toInt());
-				}
-				else if (keyword == model->getKeyWordDuration())
-				{
-					// Cast to int
-					model->setDuration(value.toInt());
-				}
-				else if (keyword == model->getKeyWordExpirationDate())
-				{
-					// Cast to QDate
-					model->setExpirationDate(QDate::fromString(value, "dd.MM.yyyy"));
-				}
-				else if (keyword == model->getKeyWordCustomerNumber())
-				{
-					model->setCustomerNumber(value);
-				}
-			}
-		}
-	}
-}
-
-void Player::setLicenseFilePath(QString licenseFilePath)
-{
-	this->licenseFilePath = licenseFilePath;
-}
-
-QString Player::getLicenseFilePath()
-{
-	return licenseFilePath;
-}
-
-void Player::setSignatureFilePath(QString signatureFilePath)
-{
-	this->signatureFilePath = signatureFilePath;
-}
-
-QString Player::getSignatureFilePath()
-{
-	return signatureFilePath;
-}
-
-bool Player::checkMacAdress()
-{
-	QString licenseMac = model->getMac();
-	if (!licenseMac.isEmpty()) 
-	{
-		for (QNetworkInterface netInterface : QNetworkInterface::allInterfaces())
-		{
-			// Get only the non-loopback mac addresses
-			if (!(netInterface.flags() & QNetworkInterface::IsLoopBack))
-			{
-				// If one mac adress is the same like the one mentioned in the license, everything is fine
-				if (netInterface.hardwareAddress() == licenseMac)
-				{
-					return true;
-				}
-			}
-		}
-	}
-	return false;
-}
-
-bool Player::checkExpirationDate()
-{
-	QDate licenseExpirationDate = model->getExpirationDate();
-	QDate today = QDate::currentDate();
-	// If today is earlier then the expiration date, everything is fine
-	if (today <= licenseExpirationDate)
-	{
-		return true;
-	}
-	return false;
 }

@@ -52,7 +52,7 @@
 #define PLAYER_H
 
 #include "videowidget.h"
-#include "LicenseModel.h"
+#include "LicenseVerification.h"
 #include "LicenseExceptions.h"
 
 #include <QWidget>
@@ -79,21 +79,12 @@ class Player : public QWidget
     Q_OBJECT
 
 public:
-    Player(QWidget *parent = 0);
+    Player(LicenseVerification* verification, QWidget *parent = 0);
     ~Player();
 
     bool isPlayerAvailable() const;
 
     void addToPlaylist(const QList<QUrl> urls);
-
-	void setLicenseMacError(bool licenseMacError);
-	bool getLicenseMacError();
-	void setLicenseExpirationDateError(bool licenseExpirationDateError);
-	bool getLicenseExpirationDateError();
-
-	void showErrorMessageBox(QString title, QString errorText);
-
-	void processLicense();
 
 signals:
     void fullScreenChanged(bool fullScreen);
@@ -119,25 +110,12 @@ private slots:
 
     void showColorDialog();
 
-	void onLicenseHelp();
-
 private:
     void clearHistogram();
     void setTrackInfo(const QString &info);
     void setStatusInfo(const QString &info);
     void handleCursor(QMediaPlayer::MediaStatus status);
     void updateDurationInfo(qint64 currentInfo);
-
-	bool checkLicenseFileNumber();
-	bool checkSignatureFileNumber();
-	bool verifySignature(QString licensePath, const char* signaturePath);
-	void setLicenseFilePath(QString licenseFilePath);
-	void readDataFromLicenseFile(QString licensePath);
-	QString getLicenseFilePath();
-	void setSignatureFilePath(QString signatureFilePath);
-	QString getSignatureFilePath();
-	bool checkMacAdress();
-	bool checkExpirationDate();
 
     QMediaPlayer *player;
     QMediaPlaylist *playlist;
@@ -161,12 +139,7 @@ private:
     QString statusInfo;
     qint64 duration;
 
-	LicenseModel* model;
-	QString licenseFilePath;
-	QString signatureFilePath;
-
-	bool licenseMacError;
-	bool licenseExpirationDateError;
+	LicenseVerification* verification;
 };
 
 #endif // PLAYER_H

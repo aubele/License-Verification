@@ -52,8 +52,8 @@ LicenseSignatureException::LicenseSignatureException(const char* what_arg) : Lic
 	
 const char * LicenseSignatureException::what() const throw ()
 {
-	return	"Die Signatur und dadurch ihre angegebene Lizenz sind ungültig. Bitte stellen Sie sicher, "
-		"dass Sie keine Änderungen in der Signaturdatei, sowie in der Lizenzdatei durchgeführt haben.\n"
+	return	"Die Signatur und dadurch ihre angegebene Lizenz sind ungueltig. Bitte stellen Sie sicher, "
+		"dass Sie keine Aenderungen in der Signaturdatei, sowie in der Lizenzdatei durchgefuehrt haben.\n"
 		"\n"
 		"Bei weiteren Problemen lesen Sie bitte das beilegende Dokument unter 'Help' zur Lizenzierung "
 		"durch. Diese beinhalten moegliche Fehlerloesungen und Informationen, die nuetzlich sein koennten.\n"
@@ -69,7 +69,7 @@ LicenseFileNumberException::LicenseFileNumberException(const char* what_arg) : L
 	
 const char * LicenseFileNumberException::what() const throw ()
 {
-	return	"Bitte überprüfen Sie ob sich nur eine Datei mit der Ändung '*.lic' befindet und löschen "
+	return	"Bitte ueberpruefen Sie ob sich nur eine Datei mit der Aendung '*.lic' befindet und loeschen "
 		"oder verschieben Sie gegebenenfalls die alte Datei aus dem Ordner.\n"
 		"\n"
 		"Bei weiteren Problemen lesen Sie bitte das beilegende Dokument unter 'Help' zur Lizenzierung "
@@ -86,7 +86,7 @@ LicenseSignatureFileNumberException::LicenseSignatureFileNumberException(const c
 
 const char * LicenseSignatureFileNumberException::what() const throw ()
 {
-	return	"Bitte überprüfen Sie ob sich nur eine Datei mit der Ändung '*.dat' befindet und löschen "
+	return	"Bitte ueberpruefen Sie ob sich nur eine Datei mit der Aendung '*.dat' befindet und loeschen "
 		"oder verschieben Sie gegebenenfalls die alte Datei aus dem Ordner.\n"
 		"\n"
 		"Bei weiteren Problemen lesen Sie bitte das beilegende Dokument unter 'Help' zur Lizenzierung "

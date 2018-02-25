@@ -49,6 +49,7 @@
 ****************************************************************************/
 
 #include "player.h"
+#include "LicenseVerification.h"
 
 #include <QApplication>
 #include <QCommandLineParser>
@@ -73,17 +74,18 @@ int main(int argc, char *argv[])
     parser.addPositionalArgument("url", "The URL to open.");
     parser.process(app);
 
-	Player player;
-
+	LicenseVerification* verification = new LicenseVerification;
 	try
 	{
-		player.processLicense();
+		verification->processLicense();
 	}
 	catch (LicenseException& licExcp)
 	{
-		player.showErrorMessageBox("Lizenz", licExcp.what());
+		verification->showErrorMessageBox("Lizenz ungueltig", licExcp.what());
 		return 0;
 	}
+
+	Player player(verification);
 
     if (!parser.positionalArguments().isEmpty() && player.isPlayerAvailable()) {
         QList<QUrl> urls;
