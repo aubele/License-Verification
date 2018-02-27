@@ -52,12 +52,14 @@
 #define PLAYER_H
 
 #include "videowidget.h"
+#include "playercontrols.h"
 #include "LicenseVerification.h"
 #include "LicenseExceptions.h"
 
 #include <QWidget>
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
+#include <QBoxLayout>
 
 QT_BEGIN_NAMESPACE
 class QAbstractItemView;
@@ -111,6 +113,14 @@ private slots:
     void showColorDialog();
 
 private:
+	QBoxLayout* setUpLicenseInfo();
+
+	void toggleFeatures();
+	void toggleFullScreenFeature(bool enable);
+	void toggleSpeedFeature(bool enable);
+	void toggleColorFeature(bool enable);
+	void toggleHistogramFeature(bool enable);
+
     void clearHistogram();
     void setTrackInfo(const QString &info);
     void setStatusInfo(const QString &info);
@@ -119,6 +129,7 @@ private:
 
     QMediaPlayer *player;
     QMediaPlaylist *playlist;
+	PlayerControls *controls;
     VideoWidget *videoWidget;
     QLabel *coverLabel;
     QSlider *slider;

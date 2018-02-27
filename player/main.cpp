@@ -74,9 +74,12 @@ int main(int argc, char *argv[])
     parser.addPositionalArgument("url", "The URL to open.");
     parser.process(app);
 
+
+	// Still need to call processLicense() after init
 	LicenseVerification* verification = new LicenseVerification;
 	try
 	{
+		// Call processLicense() at least once
 		verification->processLicense();
 	}
 	catch (LicenseException& licExcp)
@@ -85,6 +88,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
+	// Before you overgive the verification object be sure to call processLicense() once
 	Player player(verification);
 
     if (!parser.positionalArguments().isEmpty() && player.isPlayerAvailable()) {

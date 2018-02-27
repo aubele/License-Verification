@@ -25,6 +25,10 @@
 using namespace CryptoPP;
 
 
+///////////////////////////////////////////////////////////////////////////////////////////
+// ### CONSTRUCTOR ### 
+
+
 LicenseVerification::LicenseVerification()
 {
 	model = new LicenseModel();
@@ -34,6 +38,11 @@ LicenseVerification::~LicenseVerification()
 {
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// ### LICENSE VERIFICATION ### 
+
+
 // Reads the license file and checks if everything is ok
 // Can throw exceptions
 void LicenseVerification::processLicense()
@@ -41,13 +50,13 @@ void LicenseVerification::processLicense()
 	bool verification = false;
 	if (checkLicenseFileNumber())
 	{
-		QString licensePath = getLicenseFilePath();
+		QString licensePath = getLicenseFilePathFromDirectory();
 		if (checkSignatureFileNumber())
 		{
-			QString signaturePath = getSignatureFilePath();
+			QString signaturePath = getSignatureFilePathFromDirectory();
 			QByteArray signatureFilePath = signaturePath.toLatin1();
 			const char* cSignatureFilePath = signatureFilePath.data();
-			verification = verifySignature(getLicenseFilePath(), cSignatureFilePath);
+			verification = verifySignature(getLicenseFilePathFromDirectory(), cSignatureFilePath);
 		}
 		else
 		{
@@ -61,7 +70,7 @@ void LicenseVerification::processLicense()
 
 	if (verification)
 	{
-		readDataFromLicenseFile(getLicenseFilePath());
+		readDataFromLicenseFile(getLicenseFilePathFromDirectory());
 		if (!checkMacAdress())
 		{
 			throw LicenseMacAdressException("");
@@ -110,7 +119,7 @@ bool LicenseVerification::checkSignatureFileNumber()
 	return false;
 }
 
-const QString LicenseVerification::getLicenseFilePath()
+const QString LicenseVerification::getLicenseFilePathFromDirectory()
 {
 	QDirIterator itLic("lic", QStringList() << "*.lic", QDir::Files | QDir::NoDotAndDotDot | QDir::Readable);
 	while (itLic.hasNext())
@@ -120,7 +129,7 @@ const QString LicenseVerification::getLicenseFilePath()
 	return QString();
 }
 
-const QString LicenseVerification::getSignatureFilePath()
+const QString LicenseVerification::getSignatureFilePathFromDirectory()
 {
 	QDirIterator itSig("lic", QStringList() << "*.dat", QDir::Files | QDir::NoDotAndDotDot | QDir::Readable);
 	while (itSig.hasNext())
@@ -286,6 +295,13 @@ bool LicenseVerification::checkExpirationDate()
 	return false;
 }
 
+void LicenseVerification::onLicenseHelp()
+{
+	QString path = QDir::currentPath();
+	path.append("/LicenseHelp.pdf");
+	QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+}
+
 void LicenseVerification::showErrorMessageBox(QString title, QString errorText)
 {
 	QPushButton* licenseHelp = new QPushButton("Help");
@@ -295,6 +311,11 @@ void LicenseVerification::showErrorMessageBox(QString title, QString errorText)
 	msgBox.addButton(licenseHelp, QMessageBox::HelpRole);
 	msgBox.exec();
 }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// ### MODEL ### 
+
 
 const QString LicenseVerification::getModelFirstName()
 {
@@ -321,9 +342,22 @@ const QDate& LicenseVerification::getModelExpirationDate()
 	return model->getExpirationDate();
 }
 
-void LicenseVerification::onLicenseHelp()
+bool LicenseVerification::getModelFeatureFullScreen()
 {
-	QString path = QDir::currentPath();
-	path.append("/LicenseHelp.pdf");
-	QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+	return model->getFeatureFullScreen();
+}
+
+bool LicenseVerification::getModelFeatureSpeed()
+{
+	return model->getFeatureSpeed();
+}
+
+bool LicenseVerification::getModelFeatureColor()
+{
+	return model->getFeatureColor();
+}
+
+bool LicenseVerification::getModelFeatureHistogram()
+{
+	return model->getFeatureHistogram();
 }

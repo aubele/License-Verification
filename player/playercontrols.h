@@ -71,6 +71,7 @@ public:
     int volume() const;
     bool isMuted() const;
     qreal playbackRate() const;
+	void toggleSpeedButton(bool enable);
 
 public slots:
     void setState(QMediaPlayer::State state);

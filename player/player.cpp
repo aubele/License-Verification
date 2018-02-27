@@ -50,7 +50,6 @@
 
 #include "player.h"
 
-#include "playercontrols.h"
 #include "playlistmodel.h"
 #include "histogramwidget.h"
 
@@ -71,7 +70,6 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
     , colorDialog(0)
 	, verification(verification)
 {
-
 //! [create-objs]
     player = new QMediaPlayer(this);
     // owned by PlaylistModel
@@ -91,7 +89,8 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
     connect(player, &QMediaPlayer::stateChanged, this, &Player::stateChanged);
 
 //! [2]
-    videoWidget = new VideoWidget(this);
+	// Boolean needed for the key events
+    videoWidget = new VideoWidget(verification->getModelFeatureFullScreen(), this);
     player->setVideoOutput(videoWidget);
 
     playlistModel = new PlaylistModel(this);
@@ -109,29 +108,29 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
 
     labelDuration = new QLabel(this);
     connect(slider, SIGNAL(sliderMoved(int)), this, SLOT(seek(int)));
+	
+	labelHistogram = new QLabel(this);
+	labelHistogram->setText("Histogram:");
+	videoHistogram = new HistogramWidget(this);
+	audioHistogram = new HistogramWidget(this);
+	QHBoxLayout *histogramLayout = new QHBoxLayout;
+	histogramLayout->addWidget(labelHistogram);
+	histogramLayout->addWidget(videoHistogram, 1);
+	histogramLayout->addWidget(audioHistogram, 2);
 
-    labelHistogram = new QLabel(this);
-    labelHistogram->setText("Histogram:");
-    videoHistogram = new HistogramWidget(this);
-    audioHistogram = new HistogramWidget(this);
-    QHBoxLayout *histogramLayout = new QHBoxLayout;
-    histogramLayout->addWidget(labelHistogram);
-    histogramLayout->addWidget(videoHistogram, 1);
-    histogramLayout->addWidget(audioHistogram, 2);
+	videoProbe = new QVideoProbe(this);
+	connect(videoProbe, SIGNAL(videoFrameProbed(QVideoFrame)), videoHistogram, SLOT(processFrame(QVideoFrame)));
+	videoProbe->setSource(player);
 
-    videoProbe = new QVideoProbe(this);
-    connect(videoProbe, SIGNAL(videoFrameProbed(QVideoFrame)), videoHistogram, SLOT(processFrame(QVideoFrame)));
-    videoProbe->setSource(player);
-
-    audioProbe = new QAudioProbe(this);
-    connect(audioProbe, SIGNAL(audioBufferProbed(QAudioBuffer)), audioHistogram, SLOT(processBuffer(QAudioBuffer)));
-    audioProbe->setSource(player);
+	audioProbe = new QAudioProbe(this);
+	connect(audioProbe, SIGNAL(audioBufferProbed(QAudioBuffer)), audioHistogram, SLOT(processBuffer(QAudioBuffer)));
+	audioProbe->setSource(player);
 
     QPushButton *openButton = new QPushButton(tr("Open"), this);
 
     connect(openButton, SIGNAL(clicked()), this, SLOT(open()));
 
-    PlayerControls *controls = new PlayerControls(this);
+    controls = new PlayerControls(this);
     controls->setState(player->state());
     controls->setVolume(player->volume());
     controls->setMuted(controls->isMuted());
@@ -159,14 +158,7 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
     colorButton->setEnabled(false);
     connect(colorButton, SIGNAL(clicked()), this, SLOT(showColorDialog()));
 
-	QLabel* licenseText = new QLabel;
-	licenseText->setText("Dieses Programm ist lizenziert fuer " + verification->getModelFirstName() + " " + verification->getModelLastName() +
-		", Kundennummer: " + verification->getModelCustomerNumber() + ", Firma: " + verification->getModelCompany() + " | Gueltig bis " + 
-		verification->getModelExpirationDate().toString("dd.MM.yyyy"));
-	licenseText->setAlignment(Qt::AlignLeft);
-
-	QBoxLayout *licenseLayout = new QHBoxLayout;
-	licenseLayout->addWidget(licenseText);
+	QBoxLayout *licenseLayout = setUpLicenseInfo();
 
 	QBoxLayout *displayLayout = new QHBoxLayout;
 	displayLayout->addWidget(videoWidget, 2);
@@ -189,7 +181,7 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
     hLayout->addWidget(labelDuration);
     layout->addLayout(hLayout);
     layout->addLayout(controlLayout);
-    layout->addLayout(histogramLayout);
+	layout->addLayout(histogramLayout);
 
     setLayout(layout);
 
@@ -206,10 +198,50 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
     }
 
     metaDataChanged();
+
+	// Enable or disable the features
+	toggleFeatures();
 }
 
 Player::~Player()
 {
+}
+
+QBoxLayout* Player::setUpLicenseInfo()
+{
+	QWidget* licenseInfos = new QWidget;
+	
+	QLabel* licenseText = new QLabel;
+	licenseText->setText("Dieses Programm ist lizenziert fuer " + verification->getModelFirstName() + " " + verification->getModelLastName() +
+		", Kundennummer: " + verification->getModelCustomerNumber() + ", Firma: " + verification->getModelCompany());
+	licenseText->setAlignment(Qt::AlignLeft);
+	licenseText->setFrameShape(QFrame::Panel);
+	licenseText->setFrameShadow(QFrame::Sunken);
+	licenseText->setLineWidth(1);
+	licenseText->setMidLineWidth(3);
+	licenseText->setMargin(5);
+	
+	QLabel* licenseDate = new QLabel;
+	licenseDate->setText("Gueltig bis " + verification->getModelExpirationDate().toString("dd.MM.yyyy"));
+	licenseDate->setAlignment(Qt::AlignRight);
+	licenseDate->setFrameShape(QFrame::Panel);
+	licenseDate->setFrameShadow(QFrame::Sunken);
+	licenseDate->setLineWidth(1);
+	licenseDate->setMidLineWidth(3);
+	licenseDate->setMargin(5);
+	licenseDate->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+	QBoxLayout *licenseLabelLayout = new QHBoxLayout;
+	licenseLabelLayout->setMargin(0);
+	licenseLabelLayout->addWidget(licenseText);
+	licenseLabelLayout->addWidget(licenseDate);
+
+	licenseInfos->setLayout(licenseLabelLayout);
+
+	QBoxLayout *licenseLayout = new QHBoxLayout;
+	licenseLayout->addWidget(licenseInfos);
+
+	return licenseLayout;
 }
 
 bool Player::isPlayerAvailable() const
@@ -364,16 +396,12 @@ void Player::bufferingProgress(int progress)
 void Player::videoAvailableChanged(bool available)
 {
     if (!available) {
-        disconnect(fullScreenButton, SIGNAL(clicked(bool)),
-                    videoWidget, SLOT(setFullScreen(bool)));
-        disconnect(videoWidget, SIGNAL(fullScreenChanged(bool)),
-                fullScreenButton, SLOT(setChecked(bool)));
+        disconnect(fullScreenButton, SIGNAL(clicked(bool)), videoWidget, SLOT(setFullScreen(bool)));
+        disconnect(videoWidget, SIGNAL(fullScreenChanged(bool)), fullScreenButton, SLOT(setChecked(bool)));
         videoWidget->setFullScreen(false);
     } else {
-        connect(fullScreenButton, SIGNAL(clicked(bool)),
-                videoWidget, SLOT(setFullScreen(bool)));
-        connect(videoWidget, SIGNAL(fullScreenChanged(bool)),
-                fullScreenButton, SLOT(setChecked(bool)));
+        connect(fullScreenButton, SIGNAL(clicked(bool)), videoWidget, SLOT(setFullScreen(bool)));
+        connect(videoWidget, SIGNAL(fullScreenChanged(bool)), fullScreenButton, SLOT(setChecked(bool)));
 
         if (fullScreenButton->isChecked())
             videoWidget->setFullScreen(true);
@@ -420,47 +448,85 @@ void Player::updateDurationInfo(qint64 currentInfo)
 
 void Player::showColorDialog()
 {
-    if (!colorDialog) {
-        QSlider *brightnessSlider = new QSlider(Qt::Horizontal);
-        brightnessSlider->setRange(-100, 100);
-        brightnessSlider->setValue(videoWidget->brightness());
-        connect(brightnessSlider, SIGNAL(sliderMoved(int)), videoWidget, SLOT(setBrightness(int)));
-        connect(videoWidget, SIGNAL(brightnessChanged(int)), brightnessSlider, SLOT(setValue(int)));
+	if (!colorDialog) {
+		QSlider *brightnessSlider = new QSlider(Qt::Horizontal);
+		brightnessSlider->setRange(-100, 100);
+		brightnessSlider->setValue(videoWidget->brightness());
+		connect(brightnessSlider, SIGNAL(sliderMoved(int)), videoWidget, SLOT(setBrightness(int)));
+		connect(videoWidget, SIGNAL(brightnessChanged(int)), brightnessSlider, SLOT(setValue(int)));
 
-        QSlider *contrastSlider = new QSlider(Qt::Horizontal);
-        contrastSlider->setRange(-100, 100);
-        contrastSlider->setValue(videoWidget->contrast());
-        connect(contrastSlider, SIGNAL(sliderMoved(int)), videoWidget, SLOT(setContrast(int)));
-        connect(videoWidget, SIGNAL(contrastChanged(int)), contrastSlider, SLOT(setValue(int)));
+		QSlider *contrastSlider = new QSlider(Qt::Horizontal);
+		contrastSlider->setRange(-100, 100);
+		contrastSlider->setValue(videoWidget->contrast());
+		connect(contrastSlider, SIGNAL(sliderMoved(int)), videoWidget, SLOT(setContrast(int)));
+		connect(videoWidget, SIGNAL(contrastChanged(int)), contrastSlider, SLOT(setValue(int)));
 
-        QSlider *hueSlider = new QSlider(Qt::Horizontal);
-        hueSlider->setRange(-100, 100);
-        hueSlider->setValue(videoWidget->hue());
-        connect(hueSlider, SIGNAL(sliderMoved(int)), videoWidget, SLOT(setHue(int)));
-        connect(videoWidget, SIGNAL(hueChanged(int)), hueSlider, SLOT(setValue(int)));
+		QSlider *hueSlider = new QSlider(Qt::Horizontal);
+		hueSlider->setRange(-100, 100);
+		hueSlider->setValue(videoWidget->hue());
+		connect(hueSlider, SIGNAL(sliderMoved(int)), videoWidget, SLOT(setHue(int)));
+		connect(videoWidget, SIGNAL(hueChanged(int)), hueSlider, SLOT(setValue(int)));
 
-        QSlider *saturationSlider = new QSlider(Qt::Horizontal);
-        saturationSlider->setRange(-100, 100);
-        saturationSlider->setValue(videoWidget->saturation());
-        connect(saturationSlider, SIGNAL(sliderMoved(int)), videoWidget, SLOT(setSaturation(int)));
-        connect(videoWidget, SIGNAL(saturationChanged(int)), saturationSlider, SLOT(setValue(int)));
+		QSlider *saturationSlider = new QSlider(Qt::Horizontal);
+		saturationSlider->setRange(-100, 100);
+		saturationSlider->setValue(videoWidget->saturation());
+		connect(saturationSlider, SIGNAL(sliderMoved(int)), videoWidget, SLOT(setSaturation(int)));
+		connect(videoWidget, SIGNAL(saturationChanged(int)), saturationSlider, SLOT(setValue(int)));
 
-        QFormLayout *layout = new QFormLayout;
-        layout->addRow(tr("Brightness"), brightnessSlider);
-        layout->addRow(tr("Contrast"), contrastSlider);
-        layout->addRow(tr("Hue"), hueSlider);
-        layout->addRow(tr("Saturation"), saturationSlider);
+		QFormLayout *layout = new QFormLayout;
+		layout->addRow(tr("Brightness"), brightnessSlider);
+		layout->addRow(tr("Contrast"), contrastSlider);
+		layout->addRow(tr("Hue"), hueSlider);
+		layout->addRow(tr("Saturation"), saturationSlider);
 
-        QPushButton *button = new QPushButton(tr("Close"));
-        layout->addRow(button);
+		QPushButton *button = new QPushButton(tr("Close"));
+		layout->addRow(button);
 
-        colorDialog = new QDialog(this);
-        colorDialog->setWindowTitle(tr("Color Options"));
-        colorDialog->setLayout(layout);
+		colorDialog = new QDialog(this);
+		colorDialog->setWindowTitle(tr("Color Options"));
+		colorDialog->setLayout(layout);
 
-        connect(button, SIGNAL(clicked()), colorDialog, SLOT(close()));
-    }
-    colorDialog->show();
+		connect(button, SIGNAL(clicked()), colorDialog, SLOT(close()));
+	}
+	colorDialog->show();
+}
+
+void Player::toggleFeatures()
+{
+	toggleFullScreenFeature(verification->getModelFeatureFullScreen());
+	toggleSpeedFeature(verification->getModelFeatureSpeed());
+	toggleColorFeature(verification->getModelFeatureColor());
+	toggleHistogramFeature(verification->getModelFeatureHistogram());
+}
+
+void Player::toggleFullScreenFeature(bool enable)
+{
+	fullScreenButton->setEnabled(enable);
+	if (enable == false)
+		fullScreenButton->setToolTip("Keine gueltige Lizenz fuer dieses Feature");
+	else
+		fullScreenButton->setToolTip("");
+}
+
+void Player::toggleSpeedFeature(bool enable)
+{
+	controls->toggleSpeedButton(enable);
+}
+
+void Player::toggleColorFeature(bool enable)
+{
+	colorButton->setEnabled(enable);
+	if(enable == false)
+		colorButton->setToolTip("Keine gueltige Lizenz fuer dieses Feature");
+	else
+		colorButton->setToolTip("");
+}
+
+void Player::toggleHistogramFeature(bool enable)
+{
+	labelHistogram->setVisible(enable);
+	videoHistogram->setVisible(enable);
+	audioHistogram->setVisible(enable);
 }
 
 void Player::clearHistogram()

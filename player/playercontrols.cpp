@@ -204,6 +204,15 @@ qreal PlayerControls::playbackRate() const
     return rateBox->itemData(rateBox->currentIndex()).toDouble();
 }
 
+void PlayerControls::toggleSpeedButton(bool enable)
+{
+	rateBox->setEnabled(enable);
+	if(enable == false)
+		rateBox->setToolTip("Keine gueltige Lizenz fuer dieses Feature");
+	else
+		rateBox->setToolTip("");
+}
+
 void PlayerControls::setPlaybackRate(float rate)
 {
     for (int i = 0; i < rateBox->count(); ++i) {

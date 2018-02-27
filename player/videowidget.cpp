@@ -53,8 +53,9 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 
-VideoWidget::VideoWidget(QWidget *parent)
-    : QVideoWidget(parent)
+VideoWidget::VideoWidget(bool fullScreenFeature, QWidget *parent)
+	: QVideoWidget(parent),
+	fullScreenFeature(fullScreenFeature)
 {
     setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
@@ -68,10 +69,12 @@ VideoWidget::VideoWidget(QWidget *parent)
 void VideoWidget::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape && isFullScreen()) {
-        setFullScreen(false);
+		if (fullScreenFeature)
+			setFullScreen(false);
         event->accept();
     } else if (event->key() == Qt::Key_Enter && event->modifiers() & Qt::Key_Alt) {
-        setFullScreen(!isFullScreen());
+		if (fullScreenFeature)
+			setFullScreen(!isFullScreen());
         event->accept();
     } else {
         QVideoWidget::keyPressEvent(event);
@@ -80,7 +83,8 @@ void VideoWidget::keyPressEvent(QKeyEvent *event)
 
 void VideoWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    setFullScreen(!isFullScreen());
+	if(fullScreenFeature)
+		setFullScreen(!isFullScreen());
     event->accept();
 }
 

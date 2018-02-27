@@ -58,12 +58,15 @@ class VideoWidget : public QVideoWidget
     Q_OBJECT
 
 public:
-    VideoWidget(QWidget *parent = 0);
+    VideoWidget(bool fullScreenFeature, QWidget *parent = 0);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+
+private:
+	bool fullScreenFeature;
 };
 
 #endif // VIDEOWIDGET_H
