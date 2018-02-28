@@ -66,6 +66,10 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
+	/**
+	* Member to check if the fullscreen-feature should be activated or deactivated
+	* according to the license
+	*/
 	bool fullScreenFeature;
 };
 

@@ -1,7 +1,6 @@
 #include "LicenseExceptions.h"
 
 
-// Just the base class
 LicenseException::LicenseException(const char* what_arg) : runtime_error(what_arg)
 {
 }
@@ -11,6 +10,7 @@ const char * LicenseException::what() const throw ()
 	return "";
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 LicenseMacAdressException::LicenseMacAdressException(const char* what_arg) : LicenseException(what_arg)
 {
@@ -28,6 +28,7 @@ const char * LicenseMacAdressException::what() const throw ()
 		"sich bitte beim Support!";
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 LicenseExpirationDateException::LicenseExpirationDateException(const char* what_arg) : LicenseException(what_arg)
 {
@@ -45,6 +46,7 @@ const char * LicenseExpirationDateException::what() const throw ()
 		"sich melden Sie sich bitte beim Support!";
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 LicenseSignatureException::LicenseSignatureException(const char* what_arg) : LicenseException(what_arg)
 {
@@ -62,6 +64,7 @@ const char * LicenseSignatureException::what() const throw ()
 		"sich melden Sie sich bitte beim Support!";
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 LicenseFileNumberException::LicenseFileNumberException(const char* what_arg) : LicenseException(what_arg)
 {
@@ -79,6 +82,7 @@ const char * LicenseFileNumberException::what() const throw ()
 		"sich melden Sie sich bitte beim Support!";
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 LicenseSignatureFileNumberException::LicenseSignatureFileNumberException(const char* what_arg) : LicenseException(what_arg)
 {

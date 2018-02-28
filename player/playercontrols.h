@@ -71,7 +71,12 @@ public:
     int volume() const;
     bool isMuted() const;
     qreal playbackRate() const;
-	void toggleSpeedButton(bool enable);
+
+	/**
+	* Toggles the speed-box and sets a tooltip if it get's deactivated.
+	* @param enable True to activate, false to deactivate the feature.
+	*/ 
+	void toggleSpeedBox(bool enable);
 
 public slots:
     void setState(QMediaPlayer::State state);

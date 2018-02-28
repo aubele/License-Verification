@@ -207,43 +207,6 @@ Player::~Player()
 {
 }
 
-QBoxLayout* Player::setUpLicenseInfo()
-{
-	QWidget* licenseInfos = new QWidget;
-	
-	QLabel* licenseText = new QLabel;
-	licenseText->setText("Dieses Programm ist lizenziert fuer " + verification->getModelFirstName() + " " + verification->getModelLastName() +
-		", Kundennummer: " + verification->getModelCustomerNumber() + ", Firma: " + verification->getModelCompany());
-	licenseText->setAlignment(Qt::AlignLeft);
-	licenseText->setFrameShape(QFrame::Panel);
-	licenseText->setFrameShadow(QFrame::Sunken);
-	licenseText->setLineWidth(1);
-	licenseText->setMidLineWidth(3);
-	licenseText->setMargin(5);
-	
-	QLabel* licenseDate = new QLabel;
-	licenseDate->setText("Gueltig bis " + verification->getModelExpirationDate().toString("dd.MM.yyyy"));
-	licenseDate->setAlignment(Qt::AlignRight);
-	licenseDate->setFrameShape(QFrame::Panel);
-	licenseDate->setFrameShadow(QFrame::Sunken);
-	licenseDate->setLineWidth(1);
-	licenseDate->setMidLineWidth(3);
-	licenseDate->setMargin(5);
-	licenseDate->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-	QBoxLayout *licenseLabelLayout = new QHBoxLayout;
-	licenseLabelLayout->setMargin(0);
-	licenseLabelLayout->addWidget(licenseText);
-	licenseLabelLayout->addWidget(licenseDate);
-
-	licenseInfos->setLayout(licenseLabelLayout);
-
-	QBoxLayout *licenseLayout = new QHBoxLayout;
-	licenseLayout->addWidget(licenseInfos);
-
-	return licenseLayout;
-}
-
 bool Player::isPlayerAvailable() const
 {
     return player->isAvailable();
@@ -491,6 +454,46 @@ void Player::showColorDialog()
 	colorDialog->show();
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// All the methods below and the function-calls are added by Fabio Aubele, to add a valid license verification
+
+QBoxLayout* Player::setUpLicenseInfo()
+{
+	QWidget* licenseInfos = new QWidget;
+
+	QLabel* licenseText = new QLabel;
+	licenseText->setText("Dieses Programm ist lizenziert fuer " + verification->getModelFirstName() + " " + verification->getModelLastName() +
+		", Kundennummer: " + verification->getModelCustomerNumber() + ", Firma: " + verification->getModelCompany());
+	licenseText->setAlignment(Qt::AlignLeft);
+	licenseText->setFrameShape(QFrame::Panel);
+	licenseText->setFrameShadow(QFrame::Sunken);
+	licenseText->setLineWidth(1);
+	licenseText->setMidLineWidth(3);
+	licenseText->setMargin(5);
+
+	QLabel* licenseDate = new QLabel;
+	licenseDate->setText("Gueltig bis " + verification->getModelExpirationDate().toString("dd.MM.yyyy"));
+	licenseDate->setAlignment(Qt::AlignRight);
+	licenseDate->setFrameShape(QFrame::Panel);
+	licenseDate->setFrameShadow(QFrame::Sunken);
+	licenseDate->setLineWidth(1);
+	licenseDate->setMidLineWidth(3);
+	licenseDate->setMargin(5);
+	licenseDate->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+	QBoxLayout *licenseLabelLayout = new QHBoxLayout;
+	licenseLabelLayout->setMargin(0);
+	licenseLabelLayout->addWidget(licenseText);
+	licenseLabelLayout->addWidget(licenseDate);
+
+	licenseInfos->setLayout(licenseLabelLayout);
+
+	QBoxLayout *licenseLayout = new QHBoxLayout;
+	licenseLayout->addWidget(licenseInfos);
+
+	return licenseLayout;
+}
+
 void Player::toggleFeatures()
 {
 	toggleFullScreenFeature(verification->getModelFeatureFullScreen());
@@ -510,7 +513,7 @@ void Player::toggleFullScreenFeature(bool enable)
 
 void Player::toggleSpeedFeature(bool enable)
 {
-	controls->toggleSpeedButton(enable);
+	controls->toggleSpeedBox(enable);
 }
 
 void Player::toggleColorFeature(bool enable)

@@ -4,6 +4,11 @@
 #include "QDate"
 
 
+/**
+* The model for the license-verification and license-generation, contains all
+* nessecary data-fields for the license. There is for each field a getKeyWord*()-method 
+* to receive a key for filestorage, so it is recognizable in the reading-process.
+*/
 class LicenseModel
 {
 public:

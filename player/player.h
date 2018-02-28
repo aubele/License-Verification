@@ -113,12 +113,44 @@ private slots:
     void showColorDialog();
 
 private:
+
+	/**
+	* Creates two labels, which show informations about the user and the expiration date.
+	* @return Returns the layout with all nessecary gui-elements in it.
+	*/
 	QBoxLayout* setUpLicenseInfo();
 
+	/**
+	* Calls all toggle-feature-functions to activate or deactivate the feature like it is
+	* mentioned in the license.
+	* @see toggleFullScreenFeature()
+	* @see toggleSpeedFeature()
+	* @see toggleColorFeature()
+	* @see toggleHistogramFeature()
+	*/
 	void toggleFeatures();
+	/**
+	* Toggles the fullscreen-button and sets a tooltip if it get's deactivated.
+	* @param enable True to activate, false to deactivate the feature.
+	* @see toggleFeatures()
+	*/
 	void toggleFullScreenFeature(bool enable);
+	/**
+	* Toggles the speed-box and sets a tooltip if it get's deactivated.
+	* @param enable True to activate, false to deactivate the feature.
+	* @see toggleFeatures()
+	*/
 	void toggleSpeedFeature(bool enable);
-	void toggleColorFeature(bool enable);
+	/**
+	* Toggles the color-button and sets a tooltip if it get's deactivated.
+	* @param enable True to activate, false to deactivate the feature.
+	* @see toggleFeatures()
+	*/void toggleColorFeature(bool enable);
+	/**
+	* Toggles the histogram-widgets.
+	* @param enable True to activate, false to deactivate the feature.
+	* @see toggleFeatures()
+	*/
 	void toggleHistogramFeature(bool enable);
 
     void clearHistogram();
@@ -150,6 +182,9 @@ private:
     QString statusInfo;
     qint64 duration;
 
+	/**
+	* Verification object, mainly used to get all the nessecary data from the model.
+	*/
 	LicenseVerification* verification;
 };
 

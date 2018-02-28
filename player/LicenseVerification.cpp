@@ -43,20 +43,43 @@ LicenseVerification::~LicenseVerification()
 // ### LICENSE VERIFICATION ### 
 
 
-// Reads the license file and checks if everything is ok
-// Can throw exceptions
+
 void LicenseVerification::processLicense()
 {
 	bool verification = false;
+	// First check the amount of license files
 	if (checkLicenseFileNumber())
 	{
+		// Then get the licensepath
 		QString licensePath = getLicenseFilePathFromDirectory();
+		// Then the amount of signature files
 		if (checkSignatureFileNumber())
 		{
+			// Then get the signature path as const char* for CryptoPP
 			QString signaturePath = getSignatureFilePathFromDirectory();
 			QByteArray signatureFilePath = signaturePath.toLatin1();
 			const char* cSignatureFilePath = signatureFilePath.data();
+			// Verify the signature
 			verification = verifySignature(getLicenseFilePathFromDirectory(), cSignatureFilePath);
+			if (verification)
+			{
+				// Read all the data from the license file and set it in the model
+				readDataFromLicenseFile(getLicenseFilePathFromDirectory());
+				// Check mac
+				if (!checkMacAdress())
+				{
+					throw LicenseMacAdressException("");
+				}
+				// Check date
+				if (!checkExpirationDate())
+				{
+					throw LicenseExpirationDateException("");
+				}
+			}
+			else
+			{
+				throw LicenseSignatureException("");
+			}
 		}
 		else
 		{
@@ -67,27 +90,11 @@ void LicenseVerification::processLicense()
 	{
 		throw LicenseFileNumberException("");
 	}
-
-	if (verification)
-	{
-		readDataFromLicenseFile(getLicenseFilePathFromDirectory());
-		if (!checkMacAdress())
-		{
-			throw LicenseMacAdressException("");
-		}
-		if (!checkExpirationDate())
-		{
-			throw LicenseExpirationDateException("");
-		}
-	}
-	else
-	{
-		throw LicenseSignatureException("");
-	}
 }
 
 bool LicenseVerification::checkLicenseFileNumber()
 {
+	// Just iterate through the lic directory
 	int counterLicenseFile = 0;
 	QDirIterator itLic("lic", QStringList() << "*.lic", QDir::Files | QDir::NoDotAndDotDot | QDir::Readable | QDir::NoSymLinks);
 	while (itLic.hasNext())
@@ -105,6 +112,7 @@ bool LicenseVerification::checkLicenseFileNumber()
 
 bool LicenseVerification::checkSignatureFileNumber()
 {
+	// Just iterate through the lic directory
 	int counterSignature = 0;
 	QDirIterator itSig("lic", QStringList() << "*.dat", QDir::Files | QDir::NoDotAndDotDot | QDir::Readable);
 	while (itSig.hasNext())
@@ -121,6 +129,7 @@ bool LicenseVerification::checkSignatureFileNumber()
 
 const QString LicenseVerification::getLicenseFilePathFromDirectory()
 {
+	// Get path from lic directory
 	QDirIterator itLic("lic", QStringList() << "*.lic", QDir::Files | QDir::NoDotAndDotDot | QDir::Readable);
 	while (itLic.hasNext())
 	{
@@ -131,6 +140,7 @@ const QString LicenseVerification::getLicenseFilePathFromDirectory()
 
 const QString LicenseVerification::getSignatureFilePathFromDirectory()
 {
+	// Get path from lic directory
 	QDirIterator itSig("lic", QStringList() << "*.dat", QDir::Files | QDir::NoDotAndDotDot | QDir::Readable);
 	while (itSig.hasNext())
 	{
@@ -184,25 +194,28 @@ bool LicenseVerification::verifySignature(QString licensePath, const char* signa
 	return false;
 }
 
-void LicenseVerification::readDataFromLicenseFile(QString licenseFilePath)
+void LicenseVerification::readDataFromLicenseFile(QString licensePath)
 {
-	QFile file(licenseFilePath);
+	// Open file
+	QFile file(licensePath);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 		return;
 
 	QTextStream in(&file);
 	while (!in.atEnd())
 	{
+		// Line after line
 		QString line = in.readLine();
 		if (line != "" && line != "\n")
 		{
+			// Split the line in keyword and value
 			QStringList split = line.split(" : ");
 			if (split.length() == 2)
 			{
 				QString keyword = split[0];
 				QString value = split[1];
 
-				// Not a good style but necessary
+				// Not a good style but necessary to get the right data
 				if (keyword == model->getKeyWordFirstName())
 				{
 					model->setFirstName(value);
@@ -297,6 +310,7 @@ bool LicenseVerification::checkExpirationDate()
 
 void LicenseVerification::onLicenseHelp()
 {
+	// Open the help pdf
 	QString path = QDir::currentPath();
 	path.append("/LicenseHelp.pdf");
 	QDesktopServices::openUrl(QUrl::fromLocalFile(path));
@@ -304,6 +318,7 @@ void LicenseVerification::onLicenseHelp()
 
 void LicenseVerification::showErrorMessageBox(QString title, QString errorText)
 {
+	// Show a critical message box
 	QPushButton* licenseHelp = new QPushButton("Help");
 	connect(licenseHelp, SIGNAL(clicked()), this, SLOT(onLicenseHelp()));
 	QMessageBox msgBox(QMessageBox::Critical, title, errorText, QMessageBox::Ok);

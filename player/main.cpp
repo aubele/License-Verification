@@ -79,11 +79,12 @@ int main(int argc, char *argv[])
 	LicenseVerification* verification = new LicenseVerification;
 	try
 	{
-		// Call processLicense() at least once
+		// Call processLicense() to verify the license
 		verification->processLicense();
 	}
 	catch (LicenseException& licExcp)
 	{
+		// Show the description in a critical messagebox
 		verification->showErrorMessageBox("Lizenz ungueltig", licExcp.what());
 		return 0;
 	}

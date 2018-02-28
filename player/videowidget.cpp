@@ -47,6 +47,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+// Added a check if the fullscreen-feature is activated or deactivated 
+// according to the license | by: Fabio Aubele
 
 #include "videowidget.h"
 
