@@ -18,7 +18,7 @@ LicenseMacAdressException::LicenseMacAdressException(const char* what_arg) : Lic
 
 const char * LicenseMacAdressException::what() const throw ()
 {
-	return "Ihre Lizenz ist ungueltig, da die, in der Lizenz angegebene, Hardware-Adresse "
+	return "Ihre Lizenz ist ungueltig, da die in der Lizenz angegebene Hardware-Adresse "
 		"mit keiner Ihrer eigenen Hardware-Adressen uebereinstimmt!\n"
 		"\n"
 		"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Diese beinhalten "
@@ -72,7 +72,7 @@ LicenseFileNumberException::LicenseFileNumberException(const char* what_arg) : L
 	
 const char * LicenseFileNumberException::what() const throw ()
 {
-	return	"Bitte ueberpruefen Sie ob sich nur eine Datei mit der Aendung '*.lic' befindet und loeschen "
+	return	"Bitte ueberpruefen Sie ob sich nur eine Datei mit der Endung '*.lic' befindet und loeschen "
 		"oder verschieben Sie gegebenenfalls die alte Datei aus dem Ordner.\n"
 		"\n"
 		"Bei weiteren Problemen lesen Sie bitte das beilegende Dokument unter 'Help' zur Lizenzierung "
@@ -90,7 +90,7 @@ LicenseSignatureFileNumberException::LicenseSignatureFileNumberException(const c
 
 const char * LicenseSignatureFileNumberException::what() const throw ()
 {
-	return	"Bitte ueberpruefen Sie ob sich nur eine Datei mit der Aendung '*.dat' befindet und loeschen "
+	return	"Bitte ueberpruefen Sie ob sich nur eine Datei mit der Endung '*.dat' befindet und loeschen "
 		"oder verschieben Sie gegebenenfalls die alte Datei aus dem Ordner.\n"
 		"\n"
 		"Bei weiteren Problemen lesen Sie bitte das beilegende Dokument unter 'Help' zur Lizenzierung "
