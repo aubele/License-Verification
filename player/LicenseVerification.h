@@ -47,7 +47,7 @@ public:
     */
 	void showErrorMessageBox(QString title, QString errorText);
 
-	// All those methods just return the value from the model.
+	// All those methods just return values from the model
 	const QString getModelFirstName();
 	const QString getModelLastName();
 	const QString getModelCustomerNumber();
