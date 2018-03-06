@@ -90,7 +90,7 @@ LicenseSignatureFileNumberException::LicenseSignatureFileNumberException(const c
 
 const char * LicenseSignatureFileNumberException::what() const throw ()
 {
-	return	"Bitte ueberpruefen Sie ob sich nur eine Datei mit der Endung '*.dat' befindet und loeschen "
+	return	"Bitte ueberpruefen Sie ob sich nur eine Datei mit der Endung '*.sig' befindet und loeschen "
 		"oder verschieben Sie gegebenenfalls die alte Datei aus dem Ordner.\n"
 		"\n"
 		"Bei weiteren Problemen lesen Sie bitte das beilegende Dokument unter 'Help' zur Lizenzierung "

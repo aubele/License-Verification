@@ -143,7 +143,6 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
     connect(controls, SIGNAL(changeVolume(int)), player, SLOT(setVolume(int)));
     connect(controls, SIGNAL(changeMuting(bool)), player, SLOT(setMuted(bool)));
     connect(controls, SIGNAL(changeRate(qreal)), player, SLOT(setPlaybackRate(qreal)));
-
     connect(controls, SIGNAL(stop()), videoWidget, SLOT(update()));
 
     connect(player, SIGNAL(stateChanged(QMediaPlayer::State)),
@@ -369,7 +368,9 @@ void Player::videoAvailableChanged(bool available)
         if (fullScreenButton->isChecked())
             videoWidget->setFullScreen(true);
     }
-    colorButton->setEnabled(available);
+	// Only reactivate color button if the feature is unlocked according to the license
+	if(verification->getModelFeatureColor())
+		colorButton->setEnabled(available);
 }
 
 void Player::setTrackInfo(const QString &info)

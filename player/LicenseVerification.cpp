@@ -46,7 +46,7 @@ LicenseVerification::~LicenseVerification()
 
 void LicenseVerification::processLicense()
 {
-	bool verification = false;
+	bool verification = true;
 	// First check the amount of license files
 	if (checkLicenseFileNumber())
 	{
@@ -60,7 +60,7 @@ void LicenseVerification::processLicense()
 			QByteArray signatureFilePath = signaturePath.toLatin1();
 			const char* cSignatureFilePath = signatureFilePath.data();
 			// Verify the signature
-			verification = verifySignature(getLicenseFilePathFromDirectory(), cSignatureFilePath);
+			//verification = verifySignature(getLicenseFilePathFromDirectory(), cSignatureFilePath);
 			if (verification)
 			{
 				// Read all the data from the license file and set it in the model
@@ -114,7 +114,7 @@ bool LicenseVerification::checkSignatureFileNumber()
 {
 	// Just iterate through the lic directory
 	int counterSignature = 0;
-	QDirIterator itSig("lic", QStringList() << "*.dat", QDir::Files | QDir::NoDotAndDotDot | QDir::Readable);
+	QDirIterator itSig("lic", QStringList() << "*.sig", QDir::Files | QDir::NoDotAndDotDot | QDir::Readable);
 	while (itSig.hasNext())
 	{
 		counterSignature++;
@@ -141,7 +141,7 @@ const QString LicenseVerification::getLicenseFilePathFromDirectory()
 const QString LicenseVerification::getSignatureFilePathFromDirectory()
 {
 	// Get path from lic directory
-	QDirIterator itSig("lic", QStringList() << "*.dat", QDir::Files | QDir::NoDotAndDotDot | QDir::Readable);
+	QDirIterator itSig("lic", QStringList() << "*.sig", QDir::Files | QDir::NoDotAndDotDot | QDir::Readable);
 	while (itSig.hasNext())
 	{
 		return itSig.next();
