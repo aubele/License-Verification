@@ -46,7 +46,7 @@ LicenseVerification::~LicenseVerification()
 
 void LicenseVerification::processLicense()
 {
-	bool verification = true;
+	bool verification = false;
 	// First check the amount of license files
 	if (checkLicenseFileNumber())
 	{
@@ -60,7 +60,7 @@ void LicenseVerification::processLicense()
 			QByteArray signatureFilePath = signaturePath.toLatin1();
 			const char* cSignatureFilePath = signatureFilePath.data();
 			// Verify the signature
-			//verification = verifySignature(getLicenseFilePathFromDirectory(), cSignatureFilePath);
+			verification = verifySignature(getLicenseFilePathFromDirectory(), cSignatureFilePath);
 			if (verification)
 			{
 				// Read all the data from the license file and set it in the model
