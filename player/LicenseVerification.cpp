@@ -6,7 +6,6 @@
 #include "QTextStream"
 #include "QNetworkInterface"
 #include "QPushButton"
-#include "QMessageBox"
 #include "QDesktopServices"
 #include "QUrl"
 
@@ -32,6 +31,7 @@ using namespace CryptoPP;
 LicenseVerification::LicenseVerification()
 {
 	model = new LicenseModel();
+	isLicensingActive = true;
 }
 
 LicenseVerification::~LicenseVerification()
@@ -48,12 +48,14 @@ void LicenseVerification::processLicense()
 {
 	bool verification = false;
 	// First check the amount of license files
-	if (checkLicenseFileNumber())
+	int amountLicenseFiles = checkLicenseFileNumber();
+	if (amountLicenseFiles == 1)
 	{
 		// Then get the licensepath
 		QString licensePath = getLicenseFilePathFromDirectory();
 		// Then the amount of signature files
-		if (checkSignatureFileNumber())
+		int amountSignatureFiles = checkLicenseFileNumber();
+		if (amountSignatureFiles == 1)
 		{
 			// Then get the signature path as const char* for CryptoPP
 			QString signaturePath = getSignatureFilePathFromDirectory();
@@ -81,10 +83,40 @@ void LicenseVerification::processLicense()
 				throw LicenseSignatureException("");
 			}
 		}
+		else if (amountLicenseFiles == 0)
+		{
+			// Show a warning if there is no licensefile
+			showMessageBox("Keine gueltige Lizenz",
+				"Sie haben keine aktive Lizenz, deshalb sind keinerlei zusaetzliche Features aktiv."
+				"\n"
+				"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet "
+				"Informationen, die nuetzlich sein koennten.\n"
+				"\n"
+				"Wenn Sie noch offene Fragen haben oder eine Lizene erwerben wollen, melden Sie sich bitte beim Support!",
+				QMessageBox::Warning);
+			// And set the boolean so you can tell, that the user has no licensefile
+			setIsLicensingActive(false);
+
+		}
 		else
 		{
 			throw LicenseSignatureFileNumberException("");
 		}
+	}
+	// Show a warning
+	else if (amountLicenseFiles == 0)
+	{
+		// Show a warning if there is no licensefile
+		showMessageBox("Keine gueltige Lizenz",
+			"Sie haben keine aktive Lizenz, deshalb sind keinerlei zusaetzliche Features aktiv."
+			"\n"
+			"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet "
+			"Informationen, die nuetzlich sein koennten.\n"
+			"\n"
+			"Wenn Sie noch offene Fragen haben oder eine Lizene erwerben wollen, melden Sie sich bitte beim Support!",
+			QMessageBox::Warning);
+		// And set the boolean so you can tell, that the user has no licensefile
+		setIsLicensingActive(false);
 	}
 	else
 	{
@@ -92,7 +124,7 @@ void LicenseVerification::processLicense()
 	}
 }
 
-bool LicenseVerification::checkLicenseFileNumber()
+int LicenseVerification::checkLicenseFileNumber()
 {
 	// Just iterate through the lic directory
 	int counterLicenseFile = 0;
@@ -102,15 +134,12 @@ bool LicenseVerification::checkLicenseFileNumber()
 		counterLicenseFile++;
 		itLic.next();
 	}
-	if (counterLicenseFile == 1)
-	{
-		return true;
-	}
-	return false;
+
+	return counterLicenseFile;
 }
 
 
-bool LicenseVerification::checkSignatureFileNumber()
+int LicenseVerification::checkSignatureFileNumber()
 {
 	// Just iterate through the lic directory
 	int counterSignature = 0;
@@ -120,11 +149,8 @@ bool LicenseVerification::checkSignatureFileNumber()
 		counterSignature++;
 		itSig.next();
 	}
-	if (counterSignature == 1)
-	{
-		return true;
-	}
-	return false;
+
+	return counterSignature;
 }
 
 const QString LicenseVerification::getLicenseFilePathFromDirectory()
@@ -308,6 +334,16 @@ bool LicenseVerification::checkExpirationDate()
 	return false;
 }
 
+bool LicenseVerification::getIsLicensingActive()
+{
+	return isLicensingActive;
+}
+
+void LicenseVerification::setIsLicensingActive(bool isLicensingActive)
+{
+	this->isLicensingActive = isLicensingActive;
+}
+
 void LicenseVerification::onLicenseHelp()
 {
 	// Open the help pdf
@@ -316,12 +352,12 @@ void LicenseVerification::onLicenseHelp()
 	QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 }
 
-void LicenseVerification::showErrorMessageBox(QString title, QString errorText)
+void LicenseVerification::showMessageBox(QString title, QString errorText, QMessageBox::Icon iconEnum /*= QMessageBox::Critical*/)
 {
 	// Show a critical message box
 	QPushButton* licenseHelp = new QPushButton("Help");
 	connect(licenseHelp, SIGNAL(clicked()), this, SLOT(onLicenseHelp()));
-	QMessageBox msgBox(QMessageBox::Critical, title, errorText, QMessageBox::Ok);
+	QMessageBox msgBox(iconEnum, title, errorText, QMessageBox::Ok);
 	msgBox.setEscapeButton(QMessageBox::Ok);
 	msgBox.addButton(licenseHelp, QMessageBox::HelpRole);
 	msgBox.exec();

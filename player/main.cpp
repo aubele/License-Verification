@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 	catch (LicenseException& licExcp)
 	{
 		// Show the description in a critical messagebox
-		verification->showErrorMessageBox("Lizenz ungueltig", licExcp.what());
+		verification->showMessageBox("Lizenz ungueltig", licExcp.what());
 		return 0;
 	}
 

@@ -3,6 +3,7 @@
 #include "LicenseModel.h"
 
 #include "QObject"
+#include "QMessageBox"
 
 
 /**
@@ -14,7 +15,7 @@ class LicenseVerification : public QObject
 	Q_OBJECT
 public:
 	/**
-	 * A constructor, also initializes the model.
+	 * A constructor, also initializes the model and the boolean for active licensing.
 	 */
 	LicenseVerification();
 	/**
@@ -39,13 +40,20 @@ public:
 	*/
 	void processLicense();
 	/**
-	* Gets called to show a critical messagebox with a custom help button, which shows a 
+	* Gets called to show a messagebox with a custom help button, which shows a 
 	* pdf with informations for the license process.
 	* @param title The title for the messagebox.
 	* @param errorText The text for the messagebox.
+	* @param iconEnum The Enum to determine the right icon. Defaul is a critical (error) icon.
 	* @see onLicenseHelp()
     */
-	void showErrorMessageBox(QString title, QString errorText);
+	void showMessageBox(QString title, QString errorText, QMessageBox::Icon iconEnum = QMessageBox::Critical);
+
+	/**
+	* Get the private isLicensingActive-member to determine if licensing is active.
+	* @return The isLicensingActive-member
+	*/
+	bool getIsLicensingActive();
 
 	// All those methods just return values from the model
 	const QString getModelFirstName();
@@ -63,16 +71,16 @@ private:
 	* Checks how many licensefiles are in the designated 'lic' directory. Gets called from
 	* processLicense().
 	* @see processLicense()
-	* @return If there is exactly one file it is true, else it is false.
+	* @return The amount of licensefiles in the 'lic' direcotry.
 	*/
-	bool checkLicenseFileNumber();
+	int checkLicenseFileNumber();
 	/**
 	* Checks how many signaturefiles are in the designated 'lic' directory.Gets called from
 	* processLicense().
 	* @see processLicense()
-	* @return If there is exactly one file it is true, else it is false.
+	* @return The amount of signaturefiles in the 'lic' direcotry.
 	*/
-	bool checkSignatureFileNumber();
+	int checkSignatureFileNumber();
 	/**
 	* Checks if the signature in the signaturefile is valid with the CryptoPP library. Gets
 	* called from processLicense().
@@ -120,14 +128,29 @@ private:
 	bool checkExpirationDate();
 
 	/**
+	* Set the private isLicensingActive-member. This is private for now since this boolean
+	* should not be set outside of this class.
+	* @param isLicensingActive Boolean for the isLicensingActive-member.
+	*/
+	void setIsLicensingActive(bool isLicensingActive);
+
+	/**
 	* Private member for the data from the license.
 	*/
 	LicenseModel* model;
+	/**
+	* Private member to determine if the licensing is active. This is mainly important since
+	* the view gets changed, if there is a licensefile.
+	* Accessible through getIsLicensingActive() and setIsLicensingActive().
+	* @see getIsLicensingActive()
+	* @see setIsLicensingActive()
+	*/
+	bool isLicensingActive;
 
 private slots:
 	/**
 	* Slot for the help button on the critical messagebox for license errors.
-	* @see showErrorMessageBox()
+	* @see showMessageBox()
 	*/
 	void onLicenseHelp();
 };

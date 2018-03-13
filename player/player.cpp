@@ -157,8 +157,6 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
     colorButton->setEnabled(false);
     connect(colorButton, SIGNAL(clicked()), this, SLOT(showColorDialog()));
 
-	QBoxLayout *licenseLayout = setUpLicenseInfo();
-
 	QBoxLayout *displayLayout = new QHBoxLayout;
 	displayLayout->addWidget(videoWidget, 2);
 	displayLayout->addWidget(playlistView);
@@ -173,7 +171,6 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
     controlLayout->addWidget(colorButton);
 
     QBoxLayout *layout = new QVBoxLayout;
-	layout->addLayout(licenseLayout);
     layout->addLayout(displayLayout);
     QHBoxLayout *hLayout = new QHBoxLayout;
     hLayout->addWidget(slider);
@@ -198,6 +195,13 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
 
     metaDataChanged();
 
+	// Added by Fabio Aubele
+	// Setup the license widget at top if licensing is active
+	if (verification->getIsLicensingActive())
+	{
+		QBoxLayout *licenseLayout = setUpLicenseInfo();
+		layout->insertLayout(0, licenseLayout);
+	}
 	// Enable or disable the features
 	toggleFeatures();
 }
