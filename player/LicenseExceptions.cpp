@@ -36,14 +36,14 @@ LicenseExpirationDateException::LicenseExpirationDateException(const char* what_
 
 const char * LicenseExpirationDateException::what() const throw ()
 {
-	return "Ihre Lizenz ist ungueltig, da das, in der Lizenz angegebene, Ablaufdatum bereits "
+	return "Ihre Lizenz ist ungueltig, da das in der Lizenz angegebene Ablaufdatum bereits "
 		"ueberschritten ist!\n"
 		"\n"
 		"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet "
 		"auch moegliche Fehlerloesungen und Informationen, die nuetzlich sein koennten.\n"
 		"\n"
-		"Wenn Sie hierbei keine passende Loesung fuer das Problem finden koennen, melden Sie "
-		"sich melden Sie sich bitte beim Support!";
+		"Wenn Sie keine passende Loesung fuer das Problem finden koennen, melden Sie "
+		"sich bitte beim Support!";
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,9 +59,9 @@ const char * LicenseSignatureException::what() const throw ()
 		"\n"
 		"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet "
 		"auch moegliche Fehlerloesungen und Informationen, die nuetzlich sein koennten.\n"
-		"\n""\n"
-		"Wenn Sie hierbei keine passende Loesung fuer das Problem finden koennen, melden Sie "
-		"sich melden Sie sich bitte beim Support!";
+		"\n"
+		"Wenn Sie keine passende Loesung fuer das Problem finden koennen, melden Sie "
+		"sich bitte beim Support!";
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,14 +72,13 @@ LicenseFileNumberException::LicenseFileNumberException(const char* what_arg) : L
 	
 const char * LicenseFileNumberException::what() const throw ()
 {
-	return	"Bitte ueberpruefen Sie ob sich nur eine Datei mit der Endung '*.lic' befindet und loeschen "
-		"oder verschieben Sie gegebenenfalls die alte Datei aus dem Ordner.\n"
+	return	"Bitte ueberpruefen Sie ob sich genau eine Datei mit der Endung '*.lic' in dem 'lic'-Ordner befindet.\n"
 		"\n"
 		"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet "
 		"auch moegliche Fehlerloesungen und Informationen, die nuetzlich sein koennten.\n"
 		"\n"
-		"Wenn Sie hierbei keine passende Loesung fuer das Problem finden koennen, melden Sie "
-		"sich melden Sie sich bitte beim Support!";
+		"Wenn Sie keine passende Loesung fuer das Problem finden koennen, melden Sie "
+		"sich bitte beim Support!";
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,12 +89,11 @@ LicenseSignatureFileNumberException::LicenseSignatureFileNumberException(const c
 
 const char * LicenseSignatureFileNumberException::what() const throw ()
 {
-	return	"Bitte ueberpruefen Sie ob sich nur eine Datei mit der Endung '*.sig' befindet und loeschen "
-		"oder verschieben Sie gegebenenfalls die alte Datei aus dem Ordner.\n"
+	return	"Bitte ueberpruefen Sie ob sich genau eine Datei mit der Endung '*.sig' in dem 'lic'-Ordner befindet.\n"
 		"\n"
 		"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet "
 		"auch moegliche Fehlerloesungen und Informationen, die nuetzlich sein koennten.\n"
 		"\n"
-		"Wenn Sie hierbei keine passende Loesung fuer das Problem finden koennen, melden Sie "
-		"sich melden Sie sich bitte beim Support!";
+		"Wenn Sie keine passende Loesung fuer das Problem finden koennen, melden Sie "
+		"sich bitte beim Support!";
 }

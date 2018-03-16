@@ -60,6 +60,9 @@
     <ClCompile Include="Release\moc_LicenseVerification.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="LicenseFileReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="histogramwidget.h">
@@ -130,6 +133,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LicenseExceptions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LicenseFileReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -149,6 +149,7 @@
     </ClCompile>
     <ClCompile Include="histogramwidget.cpp" />
     <ClCompile Include="LicenseExceptions.cpp" />
+    <ClCompile Include="LicenseFileReader.cpp" />
     <ClCompile Include="LicenseModel.cpp" />
     <ClCompile Include="LicenseVerification.cpp" />
     <ClCompile Include="main.cpp" />
@@ -306,6 +307,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LicenseExceptions.h" />
+    <ClInclude Include="LicenseFileReader.h" />
     <ClInclude Include="LicenseModel.h" />
     <CustomBuild Include="LicenseVerification.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

@@ -459,6 +459,12 @@ void Player::showColorDialog()
 	colorDialog->show();
 }
 
+void Player::clearHistogram()
+{
+	QMetaObject::invokeMethod(videoHistogram, "processFrame", Qt::QueuedConnection, Q_ARG(QVideoFrame, QVideoFrame()));
+	QMetaObject::invokeMethod(audioHistogram, "processBuffer", Qt::QueuedConnection, Q_ARG(QAudioBuffer, QAudioBuffer()));
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // All the methods below and the function-calls are added by Fabio Aubele, to add a valid license verification
 
@@ -466,6 +472,7 @@ QBoxLayout* Player::setUpLicenseInfo()
 {
 	QWidget* licenseInfos = new QWidget;
 
+	// Label with user infos
 	QLabel* licenseText = new QLabel;
 	licenseText->setText("Dieses Programm ist lizenziert fuer " + verification->getModelFirstName() + " " + verification->getModelLastName() +
 		", Kundennummer: " + verification->getModelCustomerNumber() + ", Firma: " + verification->getModelCompany());
@@ -476,6 +483,7 @@ QBoxLayout* Player::setUpLicenseInfo()
 	licenseText->setMidLineWidth(3);
 	licenseText->setMargin(5);
 
+	// Label for expiration date
 	QLabel* licenseDate = new QLabel;
 	licenseDate->setText("Gueltig bis " + verification->getModelExpirationDate().toString("dd.MM.yyyy"));
 	licenseDate->setAlignment(Qt::AlignRight);
@@ -535,10 +543,4 @@ void Player::toggleHistogramFeature(bool enable)
 	labelHistogram->setVisible(enable);
 	videoHistogram->setVisible(enable);
 	audioHistogram->setVisible(enable);
-}
-
-void Player::clearHistogram()
-{
-    QMetaObject::invokeMethod(videoHistogram, "processFrame", Qt::QueuedConnection, Q_ARG(QVideoFrame, QVideoFrame()));
-    QMetaObject::invokeMethod(audioHistogram, "processBuffer", Qt::QueuedConnection, Q_ARG(QAudioBuffer, QAudioBuffer()));
 }

@@ -122,7 +122,7 @@ private:
 
 	/**
 	* Calls all toggle-feature-functions to activate or deactivate the feature like it is
-	* mentioned in the license.
+	* mentioned in the license file.
 	* @see toggleFullScreenFeature()
 	* @see toggleSpeedFeature()
 	* @see toggleColorFeature()
@@ -183,7 +183,7 @@ private:
     qint64 duration;
 
 	/**
-	* Verification object, mainly used to get all the nessecary data from the model.
+	* Verification object, mainly used here to get all the nessecary data from the model.
 	*/
 	LicenseVerification* verification;
 };

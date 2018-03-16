@@ -31,6 +31,7 @@ using namespace CryptoPP;
 LicenseVerification::LicenseVerification()
 {
 	model = new LicenseModel();
+	reader = new LicenseFileReader();
 	isLicensingActive = true;
 }
 
@@ -43,84 +44,58 @@ LicenseVerification::~LicenseVerification()
 // ### LICENSE VERIFICATION ### 
 
 
-
 void LicenseVerification::processLicense()
 {
 	bool verification = false;
-	// First check the amount of license files
+	// First check the amount of files
 	int amountLicenseFiles = checkLicenseFileNumber();
-	if (amountLicenseFiles == 1)
+	int amountSignatureFiles = checkSignatureFileNumber();
+	// If there is one of each file, everything is fine
+	if (amountLicenseFiles == 1 && amountSignatureFiles == 1)
 	{
-		// Then get the licensepath
+		// Get the licensepath
 		QString licensePath = getLicenseFilePathFromDirectory();
-		// Then the amount of signature files
-		int amountSignatureFiles = checkLicenseFileNumber();
-		if (amountSignatureFiles == 1)
+		// Read the license file
+		reader->readLicenseFile(licensePath);
+		// Verify the signature
+		verification = verifySignature(licensePath);
+		if (verification)
 		{
-			// Then get the signature path as const char* for CryptoPP
-			QString signaturePath = getSignatureFilePathFromDirectory();
-			QByteArray signatureFilePath = signaturePath.toLatin1();
-			const char* cSignatureFilePath = signatureFilePath.data();
-			// Verify the signature
-			verification = verifySignature(getLicenseFilePathFromDirectory(), cSignatureFilePath);
-			if (verification)
+			// Put the data from the reader in the model
+			readDataIntoModel(licensePath);
+			// Check mac
+			if (!checkMacAdress())
 			{
-				// Read all the data from the license file and set it in the model
-				readDataFromLicenseFile(getLicenseFilePathFromDirectory());
-				// Check mac
-				if (!checkMacAdress())
-				{
-					throw LicenseMacAdressException("");
-				}
-				// Check date
-				if (!checkExpirationDate())
-				{
-					throw LicenseExpirationDateException("");
-				}
+				throw LicenseMacAdressException("");
 			}
-			else
+			// Check date
+			if (!checkExpirationDate())
 			{
-				throw LicenseSignatureException("");
+				throw LicenseExpirationDateException("");
 			}
-		}
-		else if (amountLicenseFiles == 0)
-		{
-			// Show a warning if there is no licensefile
-			showMessageBox("Keine gueltige Lizenz",
-				"Sie haben keine aktive Lizenz, deshalb sind keinerlei zusaetzliche Features aktiv."
-				"\n"
-				"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet "
-				"Informationen, die nuetzlich sein koennten.\n"
-				"\n"
-				"Wenn Sie noch offene Fragen haben oder eine Lizene erwerben wollen, melden Sie sich bitte beim Support!",
-				QMessageBox::Warning);
-			// And set the boolean so you can tell, that the user has no licensefile
-			setIsLicensingActive(false);
-
 		}
 		else
 		{
-			throw LicenseSignatureFileNumberException("");
+			throw LicenseSignatureException("");
 		}
 	}
-	// Show a warning
-	else if (amountLicenseFiles == 0)
+	// If there are no files, show a warning cause the user probably doesnt use licensing
+	else if (amountLicenseFiles == 0 && amountSignatureFiles == 0)
 	{
-		// Show a warning if there is no licensefile
-		showMessageBox("Keine gueltige Lizenz",
-			"Sie haben keine aktive Lizenz, deshalb sind keinerlei zusaetzliche Features aktiv."
-			"\n"
-			"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet "
-			"Informationen, die nuetzlich sein koennten.\n"
-			"\n"
-			"Wenn Sie noch offene Fragen haben oder eine Lizene erwerben wollen, melden Sie sich bitte beim Support!",
-			QMessageBox::Warning);
-		// And set the boolean so you can tell, that the user has no licensefile
-		setIsLicensingActive(false);
+		toggleNoLicense();
 	}
+	// If there is only one available file or more then one from each type, its probably an
+	// error from the user, so we tell him
 	else
 	{
-		throw LicenseFileNumberException("");
+		if (amountLicenseFiles != 1)
+		{
+			throw LicenseFileNumberException("");
+		}
+		else if (amountSignatureFiles != 1)
+		{
+			throw LicenseSignatureFileNumberException("");
+		}
 	}
 }
 
@@ -175,14 +150,17 @@ const QString LicenseVerification::getSignatureFilePathFromDirectory()
 	return QString();
 }
 
-bool LicenseVerification::verifySignature(QString licensePath, const char* signaturePath)
+bool LicenseVerification::verifySignature(QString licensePath)
 {
-	// Read public key
-	CryptoPP::ByteQueue bytes;
-	FileSource file("pubkey.txt", true, new Base64Decoder);
-	file.TransferTo(bytes);
-	bytes.MessageEnd();
 	RSA::PublicKey pubKey;
+	// Decoded string
+	string pubKeyValue = reader->getSpecificEntryValue("Licensing", "key").toStdString();
+	StringSource ss(pubKeyValue, true, new Base64Decoder);
+	CryptoPP::ByteQueue bytes;
+	// String to bytes
+	ss.TransferTo(bytes);
+	bytes.MessageEnd();
+	// Load public key
 	pubKey.Load(bytes);
 
 	RSASSA_PKCS1v15_SHA_Verifier verifier(pubKey);
@@ -196,7 +174,11 @@ bool LicenseVerification::verifySignature(QString licensePath, const char* signa
 
 	// Read signation
 	string signature;
-	FileSource(signaturePath, true, new StringSink(signature));
+	// Get the signature path as const char* for CryptoPP
+	QString signaturePath = getSignatureFilePathFromDirectory();
+	QByteArray baSignaturePath = signaturePath.toLatin1();
+	const char* cSignaturePath = baSignaturePath.data();
+	FileSource(cSignaturePath, true, new StringSink(signature));
 
 	string combined(licenseData);
 	combined.append(signature);
@@ -220,85 +202,28 @@ bool LicenseVerification::verifySignature(QString licensePath, const char* signa
 	return false;
 }
 
-void LicenseVerification::readDataFromLicenseFile(QString licensePath)
+void LicenseVerification::readDataIntoModel(QString licensePath)
 {
-	// Open file
-	QFile file(licensePath);
-	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-		return;
+	model->setFirstName(reader->getSpecificEntryValue("Customer", model->getKeyWordFirstName()));
+	model->setLastName(reader->getSpecificEntryValue("Customer", model->getKeyWordLastName()));
+	model->setEmail(reader->getSpecificEntryValue("Customer", model->getKeyWordEmail()));
+	model->setCompany(reader->getSpecificEntryValue("Customer", model->getKeyWordCompany()));
+	model->setCustomerNumber(reader->getSpecificEntryValue("Customer", model->getKeyWordCustomerNumber()));
 
-	QTextStream in(&file);
-	while (!in.atEnd())
-	{
-		// Line after line
-		QString line = in.readLine();
-		if (line != "" && line != "\n")
-		{
-			// Split the line in keyword and value
-			QStringList split = line.split(" : ");
-			if (split.length() == 2)
-			{
-				QString keyword = split[0];
-				QString value = split[1];
+	// Cast to bool
+	model->setFeatureFullScreen(reader->getSpecificEntryValue("Product", model->getKeyWordFullScreen()).toInt());
+	// Cast to bool
+	model->setFeatureSpeed(reader->getSpecificEntryValue("Product", model->getKeyWordSpeed()).toInt());
+	// Cast to bool
+	model->setFeatureColor(reader->getSpecificEntryValue("Product", model->getKeyWordColor()).toInt());
+	// Cast to bool
+	model->setFeatureHistogram(reader->getSpecificEntryValue("Product", model->getKeyWordHistogram()).toInt());
+	// Cast to int
+	model->setDuration(reader->getSpecificEntryValue("Product", model->getKeyWordDuration()).toInt());
+	// Cast to QDate
+	model->setExpirationDate(QDate::fromString(reader->getSpecificEntryValue("Product", model->getKeyWordExpirationDate()), "dd.MM.yyyy"));
 
-				// Not a good style but necessary to get the right data
-				if (keyword == model->getKeyWordFirstName())
-				{
-					model->setFirstName(value);
-				}
-				else if (keyword == model->getKeyWordLastName())
-				{
-					model->setLastName(value);
-				}
-				else if (keyword == model->getKeyWordEmail())
-				{
-					model->setEmail(value);
-				}
-				else if (keyword == model->getKeyWordCompany())
-				{
-					model->setCompany(value);
-				}
-				else if (keyword == model->getKeyWordMac())
-				{
-					model->setMac(value);
-				}
-				else if (keyword == model->getKeyWordFullScreen())
-				{
-					// Cast to bool
-					model->setFeatureFullScreen(value.toInt());
-				}
-				else if (keyword == model->getKeyWordSpeed())
-				{
-					// Cast to bool
-					model->setFeatureSpeed(value.toInt());
-				}
-				else if (keyword == model->getKeyWordColor())
-				{
-					// Cast to bool
-					model->setFeatureColor(value.toInt());
-				}
-				else if (keyword == model->getKeyWordHistogram())
-				{
-					// Cast to bool
-					model->setFeatureHistogram(value.toInt());
-				}
-				else if (keyword == model->getKeyWordDuration())
-				{
-					// Cast to int
-					model->setDuration(value.toInt());
-				}
-				else if (keyword == model->getKeyWordExpirationDate())
-				{
-					// Cast to QDate
-					model->setExpirationDate(QDate::fromString(value, "dd.MM.yyyy"));
-				}
-				else if (keyword == model->getKeyWordCustomerNumber())
-				{
-					model->setCustomerNumber(value);
-				}
-			}
-		}
-	}
+	model->setMac(reader->getSpecificEntryValue("Licensing", model->getKeyWordMac()));
 }
 
 bool LicenseVerification::checkMacAdress()
@@ -334,14 +259,20 @@ bool LicenseVerification::checkExpirationDate()
 	return false;
 }
 
-bool LicenseVerification::getIsLicensingActive()
+void LicenseVerification::toggleNoLicense()
 {
-	return isLicensingActive;
-}
+	// Show a warning
+	showMessageBox("Keine gueltige Lizenz",
+		"Sie haben keine aktive Lizenz, deshalb sind keinerlei zusaetzliche Features aktiv."
+		"\n"
+		"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet "
+		"Informationen, die nuetzlich sein koennten.\n"
+		"\n"
+		"Wenn Sie noch offene Fragen haben oder eine Lizene erwerben wollen, melden Sie sich bitte beim Support!",
+		QMessageBox::Warning);
 
-void LicenseVerification::setIsLicensingActive(bool isLicensingActive)
-{
-	this->isLicensingActive = isLicensingActive;
+	// And set the boolean so you can tell, that the user has no licensefile
+	isLicensingActive = false;
 }
 
 void LicenseVerification::onLicenseHelp()
@@ -363,6 +294,10 @@ void LicenseVerification::showMessageBox(QString title, QString errorText, QMess
 	msgBox.exec();
 }
 
+bool LicenseVerification::getIsLicensingActive()
+{
+	return isLicensingActive;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // ### MODEL ### 
