@@ -64,16 +64,16 @@ public:
 	void setCustomerNumber(const QString& customerNumber);
 
 private:
-	QString firstName;
-	QString lastName;
-	QString email;
-	QString mac;
-	QString company;
-	bool featureFullScreen;
-	bool featureSpeed;
-	bool featureColor;
-	bool featureHistogram;
-	int duration;
-	QDate expirationDate;
-	QString customerNumber;
+	QString firstName = "";
+	QString lastName = "";
+	QString email = "";
+	QString mac = "";
+	QString company = "";
+	bool featureFullScreen = false;
+	bool featureSpeed = false;
+	bool featureColor = false;
+	bool featureHistogram = false;
+	int duration = 0;
+	QDate expirationDate = QDate();
+	QString customerNumber = "";
 };
