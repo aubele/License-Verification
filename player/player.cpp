@@ -47,6 +47,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+// Added methods to injure a correct license verification | by: Fabio Aubele
 
 #include "player.h"
 

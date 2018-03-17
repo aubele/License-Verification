@@ -25,9 +25,9 @@ public:
 	/**
 	* This method controls the whole verification process and calls all necessary methods
 	* to guarantee a valid verification. It checks the amount of license- and signature files,
-	* the validation of the signature, the mac adress and the expirationdate. This method should 
-	* always get called right after creating the LicenseVerification object. Throws LicenseExceptions, 
-	* if the verification fails.
+	* the validation of the signature, the mac adress and the expirationdate. 
+	* This method should always get called right after creating the LicenseVerification object. 
+	* Throws LicenseExceptions, if the verification fails.
 	* @see checkLicenseFileNumber()
 	* @see checkSignatureFileNumber()
 	* @see getLicenseFilePathFromDirectory()
@@ -67,24 +67,19 @@ public:
 
 private:
 	/**
-	* Checks how many licensefiles are in the designated 'lic' directory. Gets called from
-	* processLicense().
-	* @see processLicense()
+	* Checks how many licensefiles are in the designated 'lic' directory.
 	* @return The amount of licensefiles in the 'lic' direcotry.
 	*/
 	int checkLicenseFileNumber();
 	/**
-	* Checks how many signaturefiles are in the designated 'lic' directory. Gets called from
-	* processLicense().
-	* @see processLicense()
+	* Checks how many signaturefiles are in the designated 'lic' directory.
 	* @return The amount of signaturefiles in the 'lic' direcotry.
 	*/
 	int checkSignatureFileNumber();
 	/**
 	* Checks, with the CryptoPP library, if the signature in the signaturefile for the licensefile 
-	* is valid. Gets called from processLicense().
+	* is valid.
 	* @param licensePath The filepath to the licensefile.
-	* @see processLicense()
 	* @see getSignatureFilePathFromDirectory()
 	* @return True if the signature is valid, else false.
 	*/
@@ -92,44 +87,35 @@ private:
 
 	/**
 	* Reads the data from the licensefile through the LicenseFileReader and sets everything
-	* in the model. Gets called from processLicense().
+	* in the model.
 	* @param licensePath The filepath to the licensefile.
-	* @see processLicense()
 	*/
 	void readDataIntoModel(QString licensePath);
 	/**
-	* Gets the filepath from the licensefile through the 'lic' directory. Gets called from 
-	* processLicense().
-	* @see processLicense()
+	* Gets the filepath from the licensefile through the 'lic' directory.
 	* @return The filepath from the licensefile.
 	*/
 	const QString getLicenseFilePathFromDirectory();
 	/**
-	* Gets the filepath from the signaturefile through the 'lic' directory. Gets called from
-	* processLicense().
-	* @see processLicense()
+	* Gets the filepath from the signaturefile through the 'lic' directory.
 	* @return The filepath from the signaturefile.
 	*/
 	const QString getSignatureFilePathFromDirectory();
 
 	/**
 	* Checks if the mac adress mentioned in the license file is valid and available on the pc.
-	* Gets called from processLicense.
-	* @see processLicense()
 	* @return True if the mac adress is valid, else false.
 	*/
 	bool checkMacAdress();
 	/**
-	* Checks if the expiration date is already exceeded. Gets called from processLicense.
-	* @see processLicense()
+	* Checks if the expiration date is already exceeded.
 	* @return True if the date is not exceeded, else false.
 	*/
 	bool checkExpirationDate();
 
 	/**
 	* Triggers a warning, that no license is activated and sets the boolean isLicensingActive on false.
-	* Gets called by processLicense.
-	* @see processLicense()
+	* @see showMessageBox()
 	*/
 	void toggleNoLicense();
 
@@ -152,7 +138,6 @@ private:
 private slots:
 	/**
 	* Slot for the help button on the messagebox for license errors.
-	* @see showMessageBox()
 	*/
 	void onLicenseHelp();
 };

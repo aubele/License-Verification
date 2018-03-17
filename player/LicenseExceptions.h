@@ -6,12 +6,11 @@ using namespace std;
 
 /**
 * Base exception for all exceptions, which can get thrown in the verification process.
-* Explanation for the methods is the same for all Exceptions.
 */
 struct LicenseException : public runtime_error
 {
 	/**
-	* A Constructor.
+	* Constructor.
 	* @param what_arg Custom description, which plays no role, because all exception have default descriptions.
 	*/
 	LicenseException(const char* what_arg);

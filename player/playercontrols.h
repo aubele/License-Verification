@@ -47,6 +47,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+// Added a method to deactivate the speed box accordint to the license | by: Fabio Aubele
 
 #ifndef PLAYERCONTROLS_H
 #define PLAYERCONTROLS_H

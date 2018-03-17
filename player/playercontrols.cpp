@@ -47,6 +47,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+// Added a method to deactivate the speedbox-feature according to the license | by: Fabio Aubele
 
 #include "playercontrols.h"
 
