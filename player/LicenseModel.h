@@ -68,7 +68,7 @@ private:
 	QString lastName = "";
 	QString email = "";
 	QString mac = "";
-	QString company = "";
+	QString company = ""; 
 	bool featureFullScreen = false;
 	bool featureSpeed = false;
 	bool featureColor = false;
