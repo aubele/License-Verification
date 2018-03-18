@@ -7,8 +7,9 @@ auf die Verifikation gezeigt werden wie unsicher diese ist und mit welchen Maßna
 man die Angriffe erschweren kann.
 
 Oben beschriebenes soll dabei für eine Anwendungssoftware entworfen werden.
-Dabei wird ein Opensource Taschenrechner namens 'speedcrunch' benutzt 
-(© Copyright 2016, The SpeedCrunch Developers).
+Dafür wird ein OpenSource-Projekt der Qt-Company verwendet, welches eine 
+beispielhafte Implementation eines Videoplayers ist. 
+Copyright (C) 2017 The Qt Company Ltd.
 
 Kontakt:
 	Fabio Aubele
