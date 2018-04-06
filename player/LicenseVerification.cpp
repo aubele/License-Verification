@@ -154,7 +154,7 @@ bool LicenseVerification::verifySignature(QString licensePath)
 {
 	RSA::PublicKey pubKey;
 	// Decoded string
-	string pubKeyValue = reader->getSpecificEntryValue("Licensing", "key").toStdString();
+	string pubKeyValue = "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQDORaGFvo/jOfWYVbODeD4A/+RVIRprM0+6NJa5bCAXb4/kmVB/TcZK4LdWGvmUlPf+nSmXxwJJ6jBBAEwj4p24hGnwdyoMrZtqJdqZ13Rb5jv5/JRY+hxMBIZj8lcoZdXq6rvQGNN/fwDx7ZjQl/pzOv2dAw7xZqwHNDRuAB0zcQIBEQ";
 	StringSource ss(pubKeyValue, true, new Base64Decoder);
 	CryptoPP::ByteQueue bytes;
 	// String to bytes
