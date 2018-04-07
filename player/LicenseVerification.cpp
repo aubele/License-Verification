@@ -11,9 +11,9 @@
 
 // Crypto++ Library
 #ifdef _DEBUG
-#  pragma comment ( lib, "cryptlibd" )
+#  pragma comment ( lib, "cryptlibd32" )
 #else
-#  pragma comment ( lib, "cryptlib" )
+#  pragma comment ( lib, "cryptlib32" )
 #endif
 
 #include <rsa.h>
@@ -55,12 +55,12 @@ void LicenseVerification::processLicense()
 	{
 		// Get the licensepath
 		QString licensePath = getLicenseFilePathFromDirectory();
-		// Read the license file
-		reader->readLicenseFile(licensePath);
 		// Verify the signature
 		verification = verifySignature(licensePath);
 		if (verification)
 		{
+			// Read the license file
+			reader->readLicenseFile(licensePath);
 			// Put the data from the reader in the model
 			readDataIntoModel(licensePath);
 			// Check mac
@@ -180,26 +180,17 @@ bool LicenseVerification::verifySignature(QString licensePath)
 	const char* cSignaturePath = baSignaturePath.data();
 	FileSource(cSignaturePath, true, new StringSink(signature));
 
-	string combined(licenseData);
-	combined.append(signature);
-
 	// Verify signature
-	try
-	{
-		StringSource(combined, true,
-			new SignatureVerificationFilter(
-				verifier, NULL,
-				SignatureVerificationFilter::THROW_EXCEPTION
-			)
-		);
+	bool result = verifier.VerifyMessage((const byte*)licenseData.c_str(),
+		licenseData.length(), (const byte*)signature.c_str(), signature.size());
+
+	// Result
+	if (true == result) {
 		return true;
 	}
-	catch (SignatureVerificationFilter::SignatureVerificationFailed)
-	{
+	else {
 		return false;
 	}
-
-	return false;
 }
 
 void LicenseVerification::readDataIntoModel(QString licensePath)
