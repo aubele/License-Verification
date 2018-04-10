@@ -70,6 +70,7 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
     , slider(0)
     , colorDialog(0)
 	, verification(verification)
+	, passedTest(false)
 {
 //! [create-objs]
     player = new QMediaPlayer(this);
@@ -91,7 +92,7 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
 
 //! [2]
 	// Boolean needed for the key events
-    videoWidget = new VideoWidget(verification->getModelFeatureFullScreen(), this);
+    videoWidget = new VideoWidget(verification, this);
     player->setVideoOutput(videoWidget);
 
     playlistModel = new PlaylistModel(this);
@@ -112,8 +113,8 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
 	
 	labelHistogram = new QLabel(this);
 	labelHistogram->setText("Histogram:");
-	videoHistogram = new HistogramWidget(this);
-	audioHistogram = new HistogramWidget(this);
+	videoHistogram = new HistogramWidget(verification, this);
+	audioHistogram = new HistogramWidget(verification, this);
 	QHBoxLayout *histogramLayout = new QHBoxLayout;
 	histogramLayout->addWidget(labelHistogram);
 	histogramLayout->addWidget(videoHistogram, 1);
@@ -131,7 +132,7 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
 
     connect(openButton, SIGNAL(clicked()), this, SLOT(open()));
 
-    controls = new PlayerControls(this);
+    controls = new PlayerControls(verification, this);
     controls->setState(player->state());
     controls->setVolume(player->volume());
     controls->setMuted(controls->isMuted());
@@ -187,6 +188,7 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
                              tr("The QMediaPlayer object does not have a valid service.\n"\
                                 "Please check the media service plugins are installed."));
 
+		// Added by Fabio Aubele
         controls->setEnabled(false);
         playlistView->setEnabled(false);
         openButton->setEnabled(false);
@@ -200,6 +202,10 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
 	// Setup the license widget at top if licensing is active
 	if (verification->getIsLicensingActive())
 	{
+		if (verification->verifySignature())
+		{
+			passedTest = true;
+		}
 		QBoxLayout *licenseLayout = setUpLicenseInfo();
 		layout->insertLayout(0, licenseLayout);
 	}
@@ -216,6 +222,11 @@ bool Player::isPlayerAvailable() const
     return player->isAvailable();
 }
 
+bool Player::getPassedTest() const
+{
+	return passedTest;
+}
+
 void Player::open()
 {
     QFileDialog fileDialog(this);
@@ -229,6 +240,11 @@ void Player::open()
     fileDialog.setDirectory(QStandardPaths::standardLocations(QStandardPaths::MoviesLocation).value(0, QDir::homePath()));
     if (fileDialog.exec() == QDialog::Accepted)
         addToPlaylist(fileDialog.selectedUrls());
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 static bool isPlaylist(const QUrl &url) // Check for ".m3u" playlists.
@@ -247,12 +263,22 @@ void Player::addToPlaylist(const QList<QUrl> urls)
         else
             playlist->addMedia(url);
     }
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::durationChanged(qint64 duration)
 {
     this->duration = duration/1000;
     slider->setMaximum(duration / 1000);
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::positionChanged(qint64 progress)
@@ -261,6 +287,11 @@ void Player::positionChanged(qint64 progress)
         slider->setValue(progress / 1000);
     }
     updateDurationInfo(progress / 1000);
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::metaDataChanged()
@@ -278,6 +309,11 @@ void Player::metaDataChanged()
                     : QPixmap());
         }
     }
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::previousClicked()
@@ -288,6 +324,11 @@ void Player::previousClicked()
         playlist->previous();
     else
         player->setPosition(0);
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::jump(const QModelIndex &index)
@@ -296,17 +337,32 @@ void Player::jump(const QModelIndex &index)
         playlist->setCurrentIndex(index.row());
         player->play();
     }
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::playlistPositionChanged(int currentItem)
 {
     clearHistogram();
     playlistView->setCurrentIndex(playlistModel->index(currentItem, 0));
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::seek(int seconds)
 {
     player->setPosition(seconds * 1000);
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::statusChanged(QMediaPlayer::MediaStatus status)
@@ -335,12 +391,22 @@ void Player::statusChanged(QMediaPlayer::MediaStatus status)
         displayErrorMessage();
         break;
     }
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::stateChanged(QMediaPlayer::State state)
 {
     if (state == QMediaPlayer::StoppedState)
         clearHistogram();
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::handleCursor(QMediaPlayer::MediaStatus status)
@@ -353,11 +419,21 @@ void Player::handleCursor(QMediaPlayer::MediaStatus status)
     else
         unsetCursor();
 #endif
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::bufferingProgress(int progress)
 {
     setStatusInfo(tr("Buffering %4%").arg(progress));
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::videoAvailableChanged(bool available)
@@ -376,6 +452,11 @@ void Player::videoAvailableChanged(bool available)
 	// Only reactivate color button if the feature is unlocked according to the license
 	if(verification->getModelFeatureColor())
 		colorButton->setEnabled(available);
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::setTrackInfo(const QString &info)
@@ -385,6 +466,11 @@ void Player::setTrackInfo(const QString &info)
         setWindowTitle(QString("%1 | %2").arg(trackInfo).arg(statusInfo));
     else
         setWindowTitle(trackInfo);
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::setStatusInfo(const QString &info)
@@ -394,11 +480,21 @@ void Player::setStatusInfo(const QString &info)
         setWindowTitle(QString("%1 | %2").arg(trackInfo).arg(statusInfo));
     else
         setWindowTitle(trackInfo);
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::displayErrorMessage()
 {
     setStatusInfo(player->errorString());
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::updateDurationInfo(qint64 currentInfo)
@@ -413,10 +509,20 @@ void Player::updateDurationInfo(qint64 currentInfo)
         tStr = currentTime.toString(format) + " / " + totalTime.toString(format);
     }
     labelDuration->setText(tStr);
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 void Player::showColorDialog()
 {
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
+
 	if (!colorDialog) {
 		QSlider *brightnessSlider = new QSlider(Qt::Horizontal);
 		brightnessSlider->setRange(-100, 100);
@@ -464,6 +570,11 @@ void Player::clearHistogram()
 {
 	QMetaObject::invokeMethod(videoHistogram, "processFrame", Qt::QueuedConnection, Q_ARG(QVideoFrame, QVideoFrame()));
 	QMetaObject::invokeMethod(audioHistogram, "processBuffer", Qt::QueuedConnection, Q_ARG(QAudioBuffer, QAudioBuffer()));
+
+	if (!verification->verifySignature())
+	{
+		qApp->exit(1);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

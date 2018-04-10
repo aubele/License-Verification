@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 	{
 		// Show the description in a critical messagebox
 		verification->showMessageBox("Lizenz ungueltig", licExcp.what());
-		return 0;
+		return 1;
 	}
 
 	// Before you overgive the verification object be sure to call processLicense() once
@@ -99,6 +99,10 @@ int main(int argc, char *argv[])
         player.addToPlaylist(urls);
     }
 
+	if (!player.getPassedTest())
+	{
+		return 1;
+	}
 
 #if defined(Q_WS_SIMULATOR)
     player.setAttribute(Qt::WA_LockLandscapeOrientation);

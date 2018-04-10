@@ -89,6 +89,11 @@ public:
 
     void addToPlaylist(const QList<QUrl> urls);
 
+	/**
+	* Returns a boolean, to check if the player object passed the test on construction.
+	*/
+	bool getPassedTest() const;
+
 signals:
     void fullScreenChanged(bool fullScreen);
 
@@ -178,6 +183,8 @@ private:
     QString trackInfo;
     QString statusInfo;
     qint64 duration;
+
+	bool passedTest;
 
 	/**
 	* Verification object, mainly used here to get all the nessecary data from the model.

@@ -55,12 +55,14 @@
 
 #include <QVideoWidget>
 
+#include "LicenseVerification.h"
+
 class VideoWidget : public QVideoWidget
 {
     Q_OBJECT
 
 public:
-    VideoWidget(bool fullScreenFeature, QWidget *parent = 0);
+    VideoWidget(LicenseVerification* verification, QWidget *parent = 0);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -69,10 +71,9 @@ protected:
 
 private:
 	/**
-	* Member to check if the fullscreen-feature should be activated or deactivated
-	* according to the license
+	* Verification object.
 	*/
-	bool fullScreenFeature;
+	LicenseVerification* verification;
 };
 
 #endif // VIDEOWIDGET_H

@@ -52,8 +52,11 @@
 #ifndef PLAYERCONTROLS_H
 #define PLAYERCONTROLS_H
 
+#include "LicenseVerification.h"
+
 #include <QMediaPlayer>
 #include <QWidget>
+#include "QApplication"
 
 QT_BEGIN_NAMESPACE
 class QAbstractButton;
@@ -66,7 +69,7 @@ class PlayerControls : public QWidget
     Q_OBJECT
 
 public:
-    PlayerControls(QWidget *parent = 0);
+    PlayerControls(LicenseVerification* verification, QWidget *parent = 0);
 
     QMediaPlayer::State state() const;
     int volume() const;
@@ -111,6 +114,11 @@ private:
     QAbstractButton *muteButton;
     QAbstractSlider *volumeSlider;
     QComboBox *rateBox;
+
+	/**
+	* Verification object.
+	*/
+	LicenseVerification* verification;
 };
 
 #endif // PLAYERCONTROLS_H

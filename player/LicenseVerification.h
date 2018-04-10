@@ -54,6 +54,15 @@ public:
 	*/
 	bool getIsLicensingActive();
 
+	/**
+	* Checks, with the CryptoPP library, if the signature in the signaturefile for the licensefile
+	* is valid.
+	* @see getLicenseFilePathFromDirectory()
+	* @see getSignatureFilePathFromDirectory()
+	* @return True if the signature is valid, else false.
+	*/
+	bool verifySignature();
+
 	// All those methods just return values from the model
 	const QString getModelFirstName();
 	const QString getModelLastName();
@@ -76,14 +85,6 @@ private:
 	* @return The amount of signaturefiles in the 'lic' direcotry.
 	*/
 	int checkSignatureFileNumber();
-	/**
-	* Checks, with the CryptoPP library, if the signature in the signaturefile for the licensefile 
-	* is valid.
-	* @param licensePath The filepath to the licensefile.
-	* @see getSignatureFilePathFromDirectory()
-	* @return True if the signature is valid, else false.
-	*/
-	bool verifySignature(QString licensePath);
 
 	/**
 	* Reads the data from the licensefile through the LicenseFileReader and sets everything

@@ -51,6 +51,8 @@
 #ifndef HISTOGRAMWIDGET_H
 #define HISTOGRAMWIDGET_H
 
+#include "LicenseVerification.h"
+
 #include <QThread>
 #include <QVideoFrame>
 #include <QAudioBuffer>
@@ -74,7 +76,7 @@ class HistogramWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit HistogramWidget(QWidget *parent = 0);
+    explicit HistogramWidget(LicenseVerification* verification, QWidget *parent = 0);
     ~HistogramWidget();
     void setLevels(int levels) { m_levels = levels; }
 
@@ -93,6 +95,10 @@ private:
     QThread m_processorThread;
     bool m_isBusy;
     QVector<QAudioLevel *> audioLevels;
+	/**
+	* Verification object.
+	*/
+	LicenseVerification* verification;
 };
 
 #endif // HISTOGRAMWIDGET_H

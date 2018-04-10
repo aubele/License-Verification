@@ -8,6 +8,7 @@
 #include "QPushButton"
 #include "QDesktopServices"
 #include "QUrl"
+#include "QApplication"
 
 // Crypto++ Library
 #ifdef _DEBUG
@@ -56,7 +57,7 @@ void LicenseVerification::processLicense()
 		// Get the licensepath
 		QString licensePath = getLicenseFilePathFromDirectory();
 		// Verify the signature
-		verification = verifySignature(licensePath);
+		verification = verifySignature();
 		if (verification)
 		{
 			// Read the license file
@@ -150,7 +151,7 @@ const QString LicenseVerification::getSignatureFilePathFromDirectory()
 	return QString();
 }
 
-bool LicenseVerification::verifySignature(QString licensePath)
+bool LicenseVerification::verifySignature()
 {
 	RSA::PublicKey pubKey;
 	// Decoded string
@@ -166,6 +167,7 @@ bool LicenseVerification::verifySignature(QString licensePath)
 	RSASSA_PKCS1v15_SHA_Verifier verifier(pubKey);
 
 	// Read signed message
+	QString licensePath = getLicenseFilePathFromDirectory();
 	QFile licenseFile(licensePath);
 	if (!licenseFile.open(QIODevice::ReadOnly | QIODevice::Text))
 		return false;
@@ -185,12 +187,7 @@ bool LicenseVerification::verifySignature(QString licensePath)
 		licenseData.length(), (const byte*)signature.c_str(), signature.size());
 
 	// Result
-	if (true == result) {
-		return true;
-	}
-	else {
-		return false;
-	}
+	return result;
 }
 
 void LicenseVerification::readDataIntoModel(QString licensePath)
@@ -215,10 +212,20 @@ void LicenseVerification::readDataIntoModel(QString licensePath)
 	model->setExpirationDate(QDate::fromString(reader->getSpecificEntryValue("Product", model->getKeyWordExpirationDate()), "dd.MM.yyyy"));
 
 	model->setMac(reader->getSpecificEntryValue("Licensing", model->getKeyWordMac()));
+
+	if (!verifySignature())
+	{
+		throw LicenseSignatureException("");
+	}
 }
 
 bool LicenseVerification::checkMacAdress()
 {
+	if (!verifySignature())
+	{
+		throw LicenseSignatureException("");
+	}
+
 	QString licenseMac = model->getMac();
 	if (!licenseMac.isEmpty())
 	{
@@ -240,6 +247,11 @@ bool LicenseVerification::checkMacAdress()
 
 bool LicenseVerification::checkExpirationDate()
 {
+	if (!verifySignature())
+	{
+		throw LicenseSignatureException("");
+	}
+
 	QDate licenseExpirationDate = model->getExpirationDate();
 	QDate today = QDate::currentDate();
 	// If today is earlier then the expiration date, everything is fine
