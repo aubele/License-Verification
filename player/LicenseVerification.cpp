@@ -12,7 +12,7 @@
 
 // Crypto++ Library
 #ifdef _DEBUG
-#  pragma comment ( lib, "cryptlibd32" )
+#  pragma comment ( lib, "cryptlib32d" )
 #else
 #  pragma comment ( lib, "cryptlib32" )
 #endif

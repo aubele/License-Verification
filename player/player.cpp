@@ -209,6 +209,10 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
 		QBoxLayout *licenseLayout = setUpLicenseInfo();
 		layout->insertLayout(0, licenseLayout);
 	}
+	else
+	{
+		passedTest = false;
+	}
 	// Enable or disable the features
 	toggleFeatures();
 }
