@@ -7,6 +7,8 @@
 #include "QMessageBox"
 
 
+std::string decode(const std::string& input);
+
 /**
  * Class for the necessary steps to verify a license, contains also methods to obtain data 
  * from the model for the view.

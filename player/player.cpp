@@ -211,7 +211,7 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
 	}
 	else
 	{
-		passedTest = false;
+		passedTest = true;
 	}
 	// Enable or disable the features
 	toggleFeatures();
@@ -590,8 +590,15 @@ QBoxLayout* Player::setUpLicenseInfo()
 
 	// Label with user infos
 	QLabel* licenseText = new QLabel;
-	licenseText->setText("Dieses Programm ist lizenziert fuer " + verification->getModelFirstName() + " " + verification->getModelLastName() +
-		", Kundennummer: " + verification->getModelCustomerNumber() + ", Firma: " + verification->getModelCompany());
+	//"Dieses Programm ist lizenziert fuer: "
+	licenseText->setText(decode("\xd2\xf8\xec\xed\xf6\xe5\xbb\x8f\xfd\xff\xf1\xe3\xea\xf7\xe0\xdf\xff\xe2\xfd\xbe\xff\xff\xe1\xba\xe1\xea\xff\xf4\xf9\xee\xad\x99\xe3\xf4\xfb\xa4\xb3").c_str() +
+		//" "
+		verification->getModelFirstName() + decode("\xb6").c_str() + verification->getModelLastName() +
+		//", Kundennummer: "
+		decode("\xba\xb1\xc2\xeb\xfd\xf2\xfe\xb1\xe1\xe5\xfb\xfc\xee\xe8\xb7\xdf").c_str() + verification->getModelCustomerNumber() + 
+		//", Firma: " 
+		decode("\xba\xb1\xcf\xf7\xe1\xfb\xfa\xe5\xaf").c_str() +
+		verification->getModelCompany());
 	licenseText->setAlignment(Qt::AlignLeft);
 	licenseText->setFrameShape(QFrame::Panel);
 	licenseText->setFrameShadow(QFrame::Sunken);
@@ -601,7 +608,8 @@ QBoxLayout* Player::setUpLicenseInfo()
 
 	// Label for expiration date
 	QLabel* licenseDate = new QLabel;
-	licenseDate->setText("Gueltig bis " + verification->getModelExpirationDate().toString("dd.MM.yyyy"));
+	//"Gueltig bis: " || "dd.MM.yyyy"
+	licenseDate->setText(decode("\xd1\xe4\xec\xf2\xe7\xff\xfc\xff\xed\xf9\xe5\xab\xab").c_str() + verification->getModelExpirationDate().toString(decode("\xf2\xf5\xa7\xd3\xde\xb8\xe2\xa6\xf6\xe9").c_str()));
 	licenseDate->setAlignment(Qt::AlignRight);
 	licenseDate->setFrameShape(QFrame::Panel);
 	licenseDate->setFrameShadow(QFrame::Sunken);
@@ -634,8 +642,9 @@ void Player::toggleFeatures()
 void Player::toggleFullScreenFeature(bool enable)
 {
 	fullScreenButton->setEnabled(enable);
+	//"Keine gueltige Lizenz fuer dieses Feature"
 	if (enable == false)
-		fullScreenButton->setToolTip("Keine gueltige Lizenz fuer dieses Feature");
+		fullScreenButton->setToolTip(decode("\xdd\xf4\xe0\xf0\xf6\xb6\xfc\xaa\xea\xfc\xe2\xf8\xec\xff\xad\xb3\xff\xeb\xec\xf0\xe9\xb6\xfd\xaa\xea\xe2\xb6\xf5\xe2\xff\xfe\x9a\xe5\xb1\xcf\xfb\xf2\xe2\xee\xad\xea").c_str());
 	else
 		fullScreenButton->setToolTip("");
 }
@@ -648,8 +657,9 @@ void Player::toggleSpeedFeature(bool enable)
 void Player::toggleColorFeature(bool enable)
 {
 	colorButton->setEnabled(enable);
+	//"Keine gueltige Lizenz fuer dieses Feature"
 	if(enable == false)
-		colorButton->setToolTip("Keine gueltige Lizenz fuer dieses Feature");
+		colorButton->setToolTip(decode("\xdd\xf4\xe0\xf0\xf6\xb6\xfc\xaa\xea\xfc\xe2\xf8\xec\xff\xad\xb3\xff\xeb\xec\xf0\xe9\xb6\xfd\xaa\xea\xe2\xb6\xf5\xe2\xff\xfe\x9a\xe5\xb1\xcf\xfb\xf2\xe2\xee\xad\xea").c_str());
 	else
 		colorButton->setToolTip("");
 }
