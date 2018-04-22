@@ -202,7 +202,7 @@ Player::Player(LicenseVerification* verification, QWidget *parent)
 	// Setup the license widget at top if licensing is active
 	if (verification->getIsLicensingActive())
 	{
-		if (verification->verifySignature())
+		if (verification->verifySignatureObfus1())
 		{
 			passedTest = true;
 		}
@@ -245,7 +245,7 @@ void Player::open()
     if (fileDialog.exec() == QDialog::Accepted)
         addToPlaylist(fileDialog.selectedUrls());
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -268,7 +268,7 @@ void Player::addToPlaylist(const QList<QUrl> urls)
             playlist->addMedia(url);
     }
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -279,7 +279,7 @@ void Player::durationChanged(qint64 duration)
     this->duration = duration/1000;
     slider->setMaximum(duration / 1000);
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -292,7 +292,7 @@ void Player::positionChanged(qint64 progress)
     }
     updateDurationInfo(progress / 1000);
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -314,7 +314,7 @@ void Player::metaDataChanged()
         }
     }
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -329,7 +329,7 @@ void Player::previousClicked()
     else
         player->setPosition(0);
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -342,7 +342,7 @@ void Player::jump(const QModelIndex &index)
         player->play();
     }
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -353,7 +353,7 @@ void Player::playlistPositionChanged(int currentItem)
     clearHistogram();
     playlistView->setCurrentIndex(playlistModel->index(currentItem, 0));
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -363,7 +363,7 @@ void Player::seek(int seconds)
 {
     player->setPosition(seconds * 1000);
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -396,7 +396,7 @@ void Player::statusChanged(QMediaPlayer::MediaStatus status)
         break;
     }
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -407,7 +407,7 @@ void Player::stateChanged(QMediaPlayer::State state)
     if (state == QMediaPlayer::StoppedState)
         clearHistogram();
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -424,7 +424,7 @@ void Player::handleCursor(QMediaPlayer::MediaStatus status)
         unsetCursor();
 #endif
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -434,7 +434,7 @@ void Player::bufferingProgress(int progress)
 {
     setStatusInfo(tr("Buffering %4%").arg(progress));
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -457,7 +457,7 @@ void Player::videoAvailableChanged(bool available)
 	if(verification->getModelFeatureColor())
 		colorButton->setEnabled(available);
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -471,7 +471,7 @@ void Player::setTrackInfo(const QString &info)
     else
         setWindowTitle(trackInfo);
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -485,7 +485,7 @@ void Player::setStatusInfo(const QString &info)
     else
         setWindowTitle(trackInfo);
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -495,7 +495,7 @@ void Player::displayErrorMessage()
 {
     setStatusInfo(player->errorString());
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -514,7 +514,7 @@ void Player::updateDurationInfo(qint64 currentInfo)
     }
     labelDuration->setText(tStr);
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -522,7 +522,7 @@ void Player::updateDurationInfo(qint64 currentInfo)
 
 void Player::showColorDialog()
 {
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -575,7 +575,7 @@ void Player::clearHistogram()
 	QMetaObject::invokeMethod(videoHistogram, "processFrame", Qt::QueuedConnection, Q_ARG(QVideoFrame, QVideoFrame()));
 	QMetaObject::invokeMethod(audioHistogram, "processBuffer", Qt::QueuedConnection, Q_ARG(QAudioBuffer, QAudioBuffer()));
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}

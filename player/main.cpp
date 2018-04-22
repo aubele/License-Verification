@@ -58,7 +58,9 @@
 
 #include <exception>
 
+
 using namespace std;
+
 
 int main(int argc, char *argv[])
 {
@@ -73,13 +75,11 @@ int main(int argc, char *argv[])
     parser.addVersionOption();
     parser.addPositionalArgument("url", "The URL to open.");
     parser.process(app);
-
-
 	// Still need to call processLicense() after init
+
 	LicenseVerification* verification = new LicenseVerification;
 	try
 	{
-		// Call processLicense() to verify the license
 		verification->processLicense();
 	}
 	catch (LicenseException& licExcp)
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 		//"Wenn Sie keine passende Loesung fuer das Problem finden koennen, melden Sie sich bitte beim Support!"
 		string message3 = decode("\xc1\xf4\xe7\xf0\xb3\xc5\xf2\xba\xaf\xfb\xf3\xf8\xe5\xff\xad\x8f\xf7\xe2\xfa\xfb\xfd\xf2\xfe\xff\xc3\xff\xf3\xe2\xfe\xf4\xea\xdf\xf0\xe4\xec\xec\xb3\xf2\xfa\xac\xaf\xc0\xe4\xfe\xe9\xf6\xe8\x92\xb6\xf7\xe0\xf0\xf7\xf3\xf5\xff\xe4\xff\xf3\xff\xe5\xff\xe3\xd3\xb6\xfc\xec\xf2\xf7\xf3\xf5\xff\xdc\xf9\xf3\xb1\xf8\xf3\xee\x97\xb6\xf3\xe0\xea\xe7\xf3\xbb\xbd\xea\xf9\xfb\xb1\xd8\xef\xfd\x8f\xf9\xe3\xfd\xbf");
 		string all = message1 + "\n\n" + message2 + "\n\n" + message3;
-		
+
 		//"Lizenz ungueltig"
 		verification->showMessageBox(decode("\xda\xf8\xf3\xfb\xfd\xec\xbb\xaa\xe1\xf7\xe3\xf4\xe7\xee\xe4\x98").c_str(), all.c_str());
 		return 1;

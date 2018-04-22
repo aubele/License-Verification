@@ -124,7 +124,7 @@ PlayerControls::PlayerControls(LicenseVerification* verification, QWidget *paren
 
 QMediaPlayer::State PlayerControls::state() const
 {
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -153,7 +153,7 @@ void PlayerControls::setState(QMediaPlayer::State state)
         }
     }
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -165,7 +165,7 @@ int PlayerControls::volume() const
                                                 QAudio::LogarithmicVolumeScale,
                                                 QAudio::LinearVolumeScale);
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -181,7 +181,7 @@ void PlayerControls::setVolume(int volume)
 
     volumeSlider->setValue(qRound(logarithmicVolume * 100));
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -189,7 +189,7 @@ void PlayerControls::setVolume(int volume)
 
 bool PlayerControls::isMuted() const
 {
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -207,7 +207,7 @@ void PlayerControls::setMuted(bool muted)
                 : QStyle::SP_MediaVolume));
     }
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -225,7 +225,7 @@ void PlayerControls::playClicked()
         break;
     }
 
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -238,7 +238,7 @@ void PlayerControls::muteClicked()
 
 qreal PlayerControls::playbackRate() const
 {
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}
@@ -258,7 +258,7 @@ void PlayerControls::setPlaybackRate(float rate)
     rateBox->addItem(QString("%1x").arg(rate), QVariant(rate));
     rateBox->setCurrentIndex(rateBox->count() - 1);
 	
-	if (!verification->verifySignature())
+	if (!verification->verifySignatureObfus1())
 	{
 		qApp->exit(1);
 	}

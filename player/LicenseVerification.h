@@ -10,25 +10,25 @@
 std::string decode(const std::string& input);
 
 /**
- * Class for the necessary steps to verify a license, contains also methods to obtain data 
- * from the model for the view.
- */
+* Class for the necessary steps to verify a license, contains also methods to obtain data
+* from the model for the view.
+*/
 class LicenseVerification : public QObject
 {
 	Q_OBJECT
 public:
 	/**
-	 * Constructor, also initializes the model, the license file reader and a boolean to determine
-	 * if licensing is active.
-	 */
+	* Constructor, also initializes the model, the license file reader and a boolean to determine
+	* if licensing is active.
+	*/
 	LicenseVerification();
 	~LicenseVerification();
 
 	/**
 	* This method controls the whole verification process and calls all necessary methods
 	* to guarantee a valid verification. It checks the amount of license- and signature files,
-	* the validation of the signature, the mac adress and the expirationdate. 
-	* This method should always get called right after creating the LicenseVerification object. 
+	* the validation of the signature, the mac adress and the expirationdate.
+	* This method should always get called right after creating the LicenseVerification object.
 	* Throws LicenseExceptions, if the verification fails.
 	* @see checkLicenseFileNumber()
 	* @see checkSignatureFileNumber()
@@ -41,13 +41,13 @@ public:
 	*/
 	void processLicense();
 	/**
-	* Gets called to show a messagebox with a custom help button, which shows a 
+	* Gets called to show a messagebox with a custom help button, which shows a
 	* pdf with informations for the license process.
 	* @param title The title for the messagebox.
 	* @param errorText The text for the messagebox.
 	* @param iconEnum The Enum to determine the right icon. Defaul is a critical (error) icon.
 	* @see onLicenseHelp()
-    */
+	*/
 	void showMessageBox(QString title, QString errorText, QMessageBox::Icon iconEnum = QMessageBox::Critical);
 
 	/**
@@ -63,7 +63,9 @@ public:
 	* @see getSignatureFilePathFromDirectory()
 	* @return True if the signature is valid, else false.
 	*/
-	bool verifySignature();
+	bool verifySignatureObfus1();
+	std::string verifySignatureObfus2();
+	std::string verifySignatureObfus3();
 
 	// All those methods just return values from the model
 	const QString getModelFirstName();
@@ -81,46 +83,46 @@ private:
 	* Checks how many licensefiles are in the designated 'lic' directory.
 	* @return The amount of licensefiles in the 'lic' direcotry.
 	*/
-	int checkLicenseFileNumber();
+	int checkLicenseFileNumberObfus();
 	/**
 	* Checks how many signaturefiles are in the designated 'lic' directory.
 	* @return The amount of signaturefiles in the 'lic' direcotry.
 	*/
-	int checkSignatureFileNumber();
+	int checkSignatureFileNumberObfus();
 
 	/**
 	* Reads the data from the licensefile through the LicenseFileReader and sets everything
 	* in the model.
 	* @param licensePath The filepath to the licensefile.
 	*/
-	void readDataIntoModel(QString licensePath);
+	void readDataIntoModelObfus();
 	/**
 	* Gets the filepath from the licensefile through the 'lic' directory.
 	* @return The filepath from the licensefile.
 	*/
-	const QString getLicenseFilePathFromDirectory();
+	const QString getLicenseFilePathFromDirectoryObfus();
 	/**
 	* Gets the filepath from the signaturefile through the 'lic' directory.
 	* @return The filepath from the signaturefile.
 	*/
-	const QString getSignatureFilePathFromDirectory();
+	const QString getSignatureFilePathFromDirectoryObfus();
 
 	/**
 	* Checks if the mac adress mentioned in the license file is valid and available on the pc.
 	* @return True if the mac adress is valid, else false.
 	*/
-	bool checkMacAdress();
+	bool checkMacAdressObfus();
 	/**
 	* Checks if the expiration date is already exceeded.
 	* @return True if the date is not exceeded, else false.
 	*/
-	bool checkExpirationDate();
+	bool checkExpirationDateObfus();
 
 	/**
 	* Triggers a warning, that no license is activated and sets the boolean isLicensingActive on false.
 	* @see showMessageBox()
 	*/
-	void toggleNoLicense();
+	void toggleNoLicenseObfus();
 
 	/**
 	* Private member for the data from the license.
@@ -138,7 +140,7 @@ private:
 	*/
 	bool isLicensingActive;
 
-private slots:
+	private slots:
 	/**
 	* Slot for the help button on the messagebox for license errors.
 	*/
