@@ -39,7 +39,7 @@ public:
 	* @see checkExpirationDate()
 	* @see toggleNoLicense()
 	*/
-	void processLicense();
+	bool processLicense();
 	/**
 	* Gets called to show a messagebox with a custom help button, which shows a
 	* pdf with informations for the license process.
@@ -77,6 +77,12 @@ public:
 	bool getModelFeatureSpeed();
 	bool getModelFeatureColor();
 	bool getModelFeatureHistogram();
+
+	/**
+	*	Checks if a debugger is present, with a trapflag.
+	* @return True if a debugger is present, else false.
+	*/
+	bool checkIt();
 
 private:
 	/**

@@ -1,4 +1,4 @@
-#include "LicenseVerification.h"
+﻿#include "LicenseVerification.h"
 #include "LicenseExceptions.h"
 
 #include "QByteArray"
@@ -15,6 +15,8 @@
 #include <osrng.h>
 #include <base64.h>
 #include <files.h>
+
+#include <excpt.h>
 
 using namespace CryptoPP;
 
@@ -456,10 +458,37 @@ string LicenseVerification::verifySignatureObfus3()
 	}
 }
 
-void LicenseVerification::processLicense()
+bool LicenseVerification::checkIt()
+{
+	bool isDebugged = true;
+	__try
+	{
+		__asm
+		{
+			pushfd
+			or dword ptr[esp], 0x100 // set the Trap Flag 
+			popfd                    // Load the value into EFLAGS register
+			nop
+		}
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		// If an exception has been raised debugger is not present
+		isDebugged = false;
+	}
+	return isDebugged;
+}
+
+bool LicenseVerification::processLicense()
 {
 	QString start = "Start";
 	this->setObjectName(start);
+
+	bool isDebug = checkIt();
+	if (isDebug)
+	{
+		return false;
+	}
 
 	int amountLicenseFiles;
 	int amountSignatureFiles;
@@ -487,6 +516,11 @@ void LicenseVerification::processLicense()
 		}
 		case 3:
 		{
+			isDebug = checkIt();
+			if (isDebug)
+			{
+				return false;
+			}
 			if (amountLicenseFiles == 1 && amountSignatureFiles == 1)
 			{
 				swVar = 4;
@@ -504,8 +538,18 @@ void LicenseVerification::processLicense()
 		}
 		case 5:
 		{
+			isDebug = checkIt();
+			if (isDebug)
+			{
+				return false;
+			}
 			// Verify the signature
 			verification = verifySignatureObfus1();
+			isDebug = checkIt();
+			if (isDebug)
+			{
+				return false;
+			}
 			swVar = 6;
 			break;
 		}
@@ -521,6 +565,11 @@ void LicenseVerification::processLicense()
 		}
 		case 7:
 		{
+			isDebug = checkIt();
+			if (isDebug)
+			{
+				return false;
+			}
 			// Read the license file
 			reader->readLicenseFile(licensePath);
 			swVar = 8;
@@ -614,6 +663,8 @@ void LicenseVerification::processLicense()
 	}
 	QString end = "Ende";
 	this->setObjectName(end);
+
+	return true;
 }
 
 void LicenseVerification::onLicenseHelp()
