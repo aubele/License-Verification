@@ -16,6 +16,8 @@
 #include <base64.h>
 #include <files.h>
 
+#include <excpt.h>
+
 using namespace CryptoPP;
 
 // Crypto++ Library

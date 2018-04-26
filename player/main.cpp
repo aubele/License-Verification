@@ -58,7 +58,6 @@
 
 #include <exception>
 #include <windows.h>
-#include <excpt.h>
 
 using namespace std;
 
