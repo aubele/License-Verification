@@ -58,6 +58,7 @@
 
 #include <exception>
 #include <windows.h>
+#include <excpt.h>
 
 using namespace std;
 
@@ -73,8 +74,8 @@ void NTAPI tls_callback(PVOID DllHandle, DWORD dwReason, PVOID)
 
 		jne Run
 	}
-	Run:
-		TerminateProcess(GetCurrentProcess(), 1);
+Run:
+	TerminateProcess(GetCurrentProcess(), 1);
 }
 
 #ifdef _WIN64
@@ -100,6 +101,7 @@ PIMAGE_TLS_CALLBACK tls_callback_func = tls_callback;
 #pragma data_seg()
 #endif //_WIN64
 
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
@@ -118,19 +120,26 @@ int main(int argc, char *argv[])
 	}
 	return 1;
 
-	RunProgram:
+RunProgram:
 		QCommandLineParser parser;
 		parser.setApplicationDescription("Qt MultiMedia Player Example");
 		parser.addHelpOption();
 		parser.addVersionOption();
 		parser.addPositionalArgument("url", "The URL to open.");
 		parser.process(app);
+		
 		// Still need to call processLicense() after init
-
 		LicenseVerification* verification = new LicenseVerification;
 		try
 		{
-			verification->processLicense();
+			if (verification->checkIt())
+			{
+				return 1;
+			}
+			if (!verification->processLicense())
+			{
+				return 1;
+			}
 		}
 		catch (LicenseException& licExcp)
 		{
