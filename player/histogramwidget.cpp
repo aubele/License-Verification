@@ -129,7 +129,7 @@ void HistogramWidget::processFrame(QVideoFrame frame)
     QMetaObject::invokeMethod(&m_processor, "processFrame",
                               Qt::QueuedConnection, Q_ARG(QVideoFrame, frame), Q_ARG(int, m_levels));
 
-	if (!verification->verifySignatureObfus1())
+	if (!verification->verifySignatureObfus())
 	{
 		qApp->exit(1);
 	}
@@ -260,7 +260,7 @@ void HistogramWidget::processBuffer(QAudioBuffer buffer)
     for (int i = 0; i < levels.count(); ++i)
         audioLevels.at(i)->setLevel(levels.at(i));
 
-	if (!verification->verifySignatureObfus1())
+	if (!verification->verifySignatureObfus())
 	{
 		qApp->exit(1);
 	}

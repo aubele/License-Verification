@@ -71,7 +71,7 @@ VideoWidget::VideoWidget(LicenseVerification* verification, QWidget *parent)
 
 void VideoWidget::keyPressEvent(QKeyEvent *event)
 {
-	if (!verification->verifySignatureObfus1())
+	if (!verification->verifySignatureObfus())
 	{
 		qApp->exit(1);
 	}
@@ -97,7 +97,7 @@ void VideoWidget::keyPressEvent(QKeyEvent *event)
 
 void VideoWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-	if (!verification->verifySignatureObfus1())
+	if (!verification->verifySignatureObfus())
 	{
 		qApp->exit(1);
 	}

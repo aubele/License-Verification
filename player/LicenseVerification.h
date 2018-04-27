@@ -63,9 +63,27 @@ public:
 	* @see getSignatureFilePathFromDirectory()
 	* @return True if the signature is valid, else false.
 	*/
-	bool verifySignatureObfus1();
-	std::string verifySignatureObfus2();
-	std::string verifySignatureObfus3();
+	bool verifySignatureObfus();
+	/**
+	* Same like verifySignatureObfus(), but with a boolean reference so the verification process can
+	* get canceled without throwing an exception. Only gets called in processLicense.
+	* @param cancel Shows if the verification process failed and no exception should be triggered.
+	* @see verifySignatureObfus()
+	* @return True if the signature is valid, else false.
+	*/
+	bool verifySignatureObfusOnProcessObfus(bool& cancel);
+	/**
+	* Gets the license data from the license file. Only gets called in the verification process
+	* from verifySignatureObfus() or verifySignatureObfusOnProcessObfus().
+	* @return The license data.
+	*/
+	std::string verifySignatureGetLicenseDataObfus();
+	/**
+	* Gets the signature from the signature file. Only gets called in the verification process
+	* from verifySignatureObfus() or verifySignatureObfusOnProcessObfus().
+	* @return The signature.
+	*/
+	std::string verifySignatureGetSignatureObfus();
 
 	// All those methods just return values from the model
 	const QString getModelFirstName();
@@ -82,7 +100,7 @@ public:
 	*	Checks if a debugger is present, with a trapflag.
 	* @return True if a debugger is present, else false.
 	*/
-	bool checkIt();
+	bool checkDebuggerWithTrapFlag();
 
 private:
 	/**

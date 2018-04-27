@@ -132,15 +132,44 @@ RunProgram:
 	parser.addPositionalArgument("url", "The URL to open.");
 	parser.process(app);
 
+	SYSTEMTIME systime1;
+	GetSystemTime(&systime1);
+	FILETIME time1;
+	SystemTimeToFileTime(&systime1, &time1);
+
 	// Still need to call processLicense() after init
 	LicenseVerification* verification = new LicenseVerification;
 	try
 	{
-		if (verification->checkIt())
+		if (verification->checkDebuggerWithTrapFlag())
 		{
 			return 1;
 		}
+
+		SYSTEMTIME systime2;
+		GetSystemTime(&systime2);
+		FILETIME time2;
+		SystemTimeToFileTime(&systime2, &time2);
+
+		// In milliseconds
+		double timeExecution = (time2.dwLowDateTime - time1.dwLowDateTime) / 10000.0;
+		if (timeExecution > 5)
+		{
+			return 1;
+		}
+
 		if (!verification->processLicense())
+		{
+			return 1;
+		}
+
+		SYSTEMTIME systime3;
+		GetSystemTime(&systime3);
+		FILETIME time3;
+		SystemTimeToFileTime(&systime3, &time3);
+
+		timeExecution = (time3.dwLowDateTime - time2.dwLowDateTime) / 10000.0;
+		if (timeExecution > 75)
 		{
 			return 1;
 		}

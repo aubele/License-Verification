@@ -17,6 +17,7 @@
 #include <files.h>
 
 #include <excpt.h>
+#include <windows.h>
 
 using namespace CryptoPP;
 
@@ -26,6 +27,9 @@ using namespace CryptoPP;
 #else
 #  pragma comment ( lib, "cryptlib32" )
 #endif
+
+// Global timestamps for easy access
+FILETIME time1,time2,time3,time4,time5,time6;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -45,7 +49,7 @@ LicenseVerification::~LicenseVerification()
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-// ### LICENSE VERIFICATION ### 
+// ### ANTI REVERSE ENGINEERING ### 
 
 
 std::string decode(const std::string& input)
@@ -62,6 +66,32 @@ std::string decode(const std::string& input)
 
 	return result;
 }
+
+bool LicenseVerification::checkDebuggerWithTrapFlag()
+{
+	bool isDebugged = true;
+	__try
+	{
+	__asm
+	{
+	pushfd
+	or dword ptr[esp], 0x100 // set the Trap Flag
+	popfd                    // Load the value into EFLAGS register
+	nop
+	}
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+	// If an exception has been raised debugger is not present
+	isDebugged = false;
+	}
+	return isDebugged;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// ### OPERATIONS FOR VERIFICATION ### 
+
 
 int LicenseVerification::checkLicenseFileNumberObfus()
 {
@@ -89,7 +119,7 @@ int LicenseVerification::checkLicenseFileNumberObfus()
 		while (itLic.hasNext())
 		{
 			amountLicenseFiles++;
-			verifySignatureObfus1();
+			verifySignatureObfus();
 		}
 
 		return amountLicenseFiles;
@@ -168,7 +198,7 @@ const QString LicenseVerification::getSignatureFilePathFromDirectoryObfus()
 			reader->readLicenseFile(lic);
 
 		readDataIntoModelObfus();
-		verifySignatureObfus1();
+		verifySignatureObfus();
 		return lic;
 	}
 }
@@ -203,7 +233,7 @@ void LicenseVerification::toggleNoLicenseObfus()
 		if (checkSignatureFileNumberObfus() > 0)
 			reader->readLicenseFile(lic);
 		readDataIntoModelObfus();
-		verifySignatureObfus1();
+		verifySignatureObfus();
 	}
 }
 
@@ -214,7 +244,7 @@ bool LicenseVerification::checkMacAdressObfus()
 	if (QDir::currentPath().append(decode("\xe2\xab\xfd").c_str()).split(decode("\xac").c_str()).size() == 0)
 	{
 		reader->readLicenseFile(getLicenseFilePathFromDirectoryObfus());
-		if (verifySignatureObfus1())
+		if (verifySignatureObfus())
 		{
 			checkExpirationDateObfus();
 			return true;
@@ -228,7 +258,7 @@ bool LicenseVerification::checkMacAdressObfus()
 	else
 	{
 		// This one
-		if (!verifySignatureObfus1())
+		if (!verifySignatureObfus())
 		{
 			throw LicenseSignatureException("");
 		}
@@ -273,7 +303,7 @@ bool LicenseVerification::checkExpirationDateObfus()
 	{
 		// This one
 		// Check date
-		if (!verifySignatureObfus1())
+		if (!verifySignatureObfus())
 		{
 			throw LicenseSignatureException("");
 		}
@@ -313,7 +343,7 @@ void LicenseVerification::readDataIntoModelObfus()
 		model->setExpirationDate(QDate::fromString(reader->getSpecificEntryValue(decode("\xc6\xe3\xe6\xfa\xe6\xf5\xef").c_str(), model->getKeyWordExpirationDate()), decode("\xf2\xf5\xa7\xd3\xde\xb8\xe2\xa6\xf6\xe9").c_str()));
 		model->setMac(reader->getSpecificEntryValue(decode("\xda\xf8\xea\xfb\xfd\xe5\xf2\xb1\xe8").c_str(), model->getKeyWordMac()));
 
-		if (!verifySignatureObfus1())
+		if (!verifySignatureObfus())
 		{
 			throw LicenseSignatureException("");
 		}
@@ -327,11 +357,149 @@ void LicenseVerification::readDataIntoModelObfus()
 		{
 			toggleNoLicenseObfus();
 		}
-		verifySignatureObfus1();
+		verifySignatureObfus();
 	}
 }
 
-bool LicenseVerification::verifySignatureObfus1()
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// ### LICENSE VERIFICATION ### 
+
+
+bool LicenseVerification::verifySignatureObfusOnProcessObfus(bool& cancel)
+{
+	if (isLicensingActive == false)
+	{
+		return true;
+	}
+
+	if (checkLicenseFileNumberObfus() > 0 && checkSignatureFileNumberObfus() == 0)
+	{
+		AutoSeededRandomPool rng;
+
+		SYSTEMTIME systime4;
+		GetSystemTime(&systime4);
+		SystemTimeToFileTime(&systime4, &time4);
+
+		double timeExecution = (time4.dwLowDateTime - time3.dwLowDateTime) / 10000.0;
+		if (timeExecution > 10)
+		{
+			cancel = true;
+			return false;
+		}
+
+		// Generate Private Key
+		DSA::PrivateKey privateKey;
+		privateKey.GenerateRandomWithKeySize(rng, 2048);
+
+		// Generate Public Key   
+		DSA::PublicKey publicKey;
+		publicKey.AssignFrom(privateKey);
+		if (!privateKey.Validate(rng, 3) || !publicKey.Validate(rng, 3))
+		{
+			throw runtime_error("DSA key generation failed");
+		}
+
+		SYSTEMTIME systime5;
+		GetSystemTime(&systime5);
+		SystemTimeToFileTime(&systime5, &time5);
+
+		timeExecution = (time5.dwLowDateTime - time4.dwLowDateTime) / 10000.0;
+		if (timeExecution > 10)
+		{
+			cancel = true;
+			return false;
+		}
+
+		string message = "";
+		string signature;
+
+		DSA::Verifier verifier(publicKey);
+		StringSource ss2(message + signature, true,
+			new SignatureVerificationFilter(
+				verifier, NULL
+				/* SIGNATURE_AT_END */
+			)
+		);
+		bool b = verifier.VerifyMessage((const byte*)message.c_str(),
+			message.length(), (const byte*)signature.c_str(), signature.size());
+		
+		SYSTEMTIME systime6;
+		GetSystemTime(&systime6);
+		SystemTimeToFileTime(&systime6, &time6);
+
+		timeExecution = (time6.dwLowDateTime - time5.dwLowDateTime) / 10000.0;
+		if (timeExecution > 10)
+		{
+			b = true;
+			return false;
+		}
+
+		return b;
+	}
+	else
+	{
+		// This one
+		RSA::PublicKey pubKey;
+		// Decoded string
+		string pubKeyValue = decode("\xdb\xd8\xce\xfa\xde\xd7\xab\x98\xcc\xc3\xe7\xd6\xd8\xd3\xef\xcc\xd2\xc0\xcc\xdc\xd2\xc7\xce\x9e\xce\xa4\xd1\xdd\xca\xde\xce\xbd\xfe\xe6\xc2\xdc\xf4\xc7\xdf\x90\xdd\xf1\xd1\xd7\xfd\xf5\xa2\x95\xd9\xf7\xde\xc7\xc5\xf4\xd4\x9b\xea\xd4\xa2\xd0\xa4\xb1\xdf\xa9\xdf\xc3\xf9\xec\xde\xa6\xb0\xe9\xc1\xda\xf7\xa4\xe9\xd9\xcc\xa7\xf4\xa5\xa6\xf5\xfe\xc0\xd9\xf0\xdb\xf3\xcc\xda\xbf\xd6\xe9\xa8\xd1\xe7\xe4\xcb\xff\xc6\xfd\xf4\xe1\xc3\xfb\xc9\xf3\xed\xc7\xb5\xa0\xfb\xcb\xdc\xd2\xd3\xec\xb5\xbb\xe0\xa4\xa5\xe3\xdd\xe3\x88\xf2\xe8\xe6\xd3\xe1\xcc\xef\xae\xc5\xf4\xe7\xcb\xba\xa9\xdf\x9d\xa3\xfb\xff\xab\xbc\xdc\xc9\x86\xa4\xf8\xee\xdc\xc9\xd3\xd7\x95\xae\xfd\xea\xf1\xc9\xf2\xc3\xae\xb9\xe2\xe0\xc0\xcc\xd4\xc3\xd0\xf0\xe6\xcd\xe6\xa4\xcc\xf1\x8e\xe3\xbf\xe6\xeb\xc4\xec\xbf\x9b\xd7\xe6\xbe\xe6\xc9\xe7\xec\x97\xc1\xd4\xc4\xe4\xca\xd8\xbd\x85\xf5\xc0\xc0\xdc\xd6\xc7").c_str();
+		StringSource ss(pubKeyValue, true, new Base64Decoder);
+		CryptoPP::ByteQueue bytes;
+		// String to bytes
+		ss.TransferTo(bytes);
+		bytes.MessageEnd();
+		// Load public key
+		pubKey.Load(bytes);
+
+		SYSTEMTIME systime4;
+		GetSystemTime(&systime4);
+		SystemTimeToFileTime(&systime4, &time4);
+
+		double timeExecution = (time4.dwLowDateTime - time3.dwLowDateTime) / 10000.0;
+		if (timeExecution > 10)
+		{
+			cancel = true;
+			return false;
+		}
+
+		RSASSA_PKCS1v15_SHA_Verifier verifier(pubKey);
+
+		// Read signed message
+		string licenseData = verifySignatureGetLicenseDataObfus();
+		// Read signation
+		string signature = verifySignatureGetSignatureObfus();
+
+		SYSTEMTIME systime5;
+		GetSystemTime(&systime5);
+		SystemTimeToFileTime(&systime5, &time5);
+
+		timeExecution = (time5.dwLowDateTime - time4.dwLowDateTime) / 10000.0;
+		if (timeExecution > 10)
+		{
+			cancel = true;
+			return false;
+		}
+
+		// Verify signature
+		bool result = verifier.VerifyMessage((const byte*)licenseData.c_str(),
+			licenseData.length(), (const byte*)signature.c_str(), signature.size());
+
+		SYSTEMTIME systime6;
+		GetSystemTime(&systime6);
+		SystemTimeToFileTime(&systime6, &time6);
+
+		timeExecution = (time6.dwLowDateTime - time5.dwLowDateTime) / 10000.0;
+		if (timeExecution > 10)
+		{
+			cancel = true;
+			return false;
+		}
+		// Result
+		return result;
+	}
+}
+
+bool LicenseVerification::verifySignatureObfus()
 {
 	if (isLicensingActive == false)
 	{
@@ -385,9 +553,9 @@ bool LicenseVerification::verifySignatureObfus1()
 		RSASSA_PKCS1v15_SHA_Verifier verifier(pubKey);
 
 		// Read signed message
-		string licenseData = verifySignatureObfus2();
+		string licenseData = verifySignatureGetLicenseDataObfus();
 		// Read signation
-		string signature = verifySignatureObfus3();
+		string signature = verifySignatureGetSignatureObfus();
 
 		// Verify signature
 		bool result = verifier.VerifyMessage((const byte*)licenseData.c_str(),
@@ -398,7 +566,7 @@ bool LicenseVerification::verifySignatureObfus1()
 	}
 }
 
-string LicenseVerification::verifySignatureObfus2()
+string LicenseVerification::verifySignatureGetLicenseDataObfus()
 {
 	if (checkLicenseFileNumberObfus() > 0 && getSignatureFilePathFromDirectoryObfus() == "")
 	{
@@ -429,7 +597,7 @@ string LicenseVerification::verifySignatureObfus2()
 	}
 }
 
-string LicenseVerification::verifySignatureObfus3()
+string LicenseVerification::verifySignatureGetSignatureObfus()
 {
 	// + "t:t"
 	if (getLicenseFilePathFromDirectoryObfus() + decode("\xe2\xab\xfd").c_str() != QDir::currentPath())
@@ -458,33 +626,21 @@ string LicenseVerification::verifySignatureObfus3()
 	}
 }
 
-bool LicenseVerification::checkIt()
-{
-	bool isDebugged = true;
-	__try
-	{
-		__asm
-		{
-			pushfd
-			or dword ptr[esp], 0x100 // set the Trap Flag 
-			popfd                    // Load the value into EFLAGS register
-			nop
-		}
-	}
-	__except (EXCEPTION_EXECUTE_HANDLER)
-	{
-		// If an exception has been raised debugger is not present
-		isDebugged = false;
-	}
-	return isDebugged;
-}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// ### MAIN PROCESS METHOD ### 
+
 
 bool LicenseVerification::processLicense()
 {
 	QString start = "Start";
 	this->setObjectName(start);
 
-	bool isDebug = checkIt();
+	SYSTEMTIME systime1;
+	GetSystemTime(&systime1);
+	SystemTimeToFileTime(&systime1, &time1);
+	
+	bool isDebug = checkDebuggerWithTrapFlag();
 	if (isDebug)
 	{
 		return false;
@@ -516,7 +672,17 @@ bool LicenseVerification::processLicense()
 		}
 		case 3:
 		{
-			isDebug = checkIt();
+			SYSTEMTIME systime2;
+			GetSystemTime(&systime2);
+			SystemTimeToFileTime(&systime2, &time2);
+
+			double timeExecution = (time2.dwLowDateTime - time1.dwLowDateTime) / 10000.0;
+			if (timeExecution > 5)
+			{
+				return false;
+			}
+
+			isDebug = checkDebuggerWithTrapFlag();
 			if (isDebug)
 			{
 				return false;
@@ -538,14 +704,30 @@ bool LicenseVerification::processLicense()
 		}
 		case 5:
 		{
-			isDebug = checkIt();
+			isDebug = checkDebuggerWithTrapFlag();
 			if (isDebug)
 			{
 				return false;
 			}
+
+			SYSTEMTIME systime3;
+			GetSystemTime(&systime3);
+			SystemTimeToFileTime(&systime3, &time3);
+
+			double timeExecution = (time3.dwLowDateTime - time2.dwLowDateTime) / 10000.0;
+			if (timeExecution > 5)
+			{
+				return false;
+			}
+
 			// Verify the signature
-			verification = verifySignatureObfus1();
-			isDebug = checkIt();
+			bool b = false;
+			verification = verifySignatureObfusOnProcessObfus(b);
+			if (b)
+			{
+				return false;
+			}
+			isDebug = checkDebuggerWithTrapFlag();
 			if (isDebug)
 			{
 				return false;
@@ -565,7 +747,7 @@ bool LicenseVerification::processLicense()
 		}
 		case 7:
 		{
-			isDebug = checkIt();
+			isDebug = checkDebuggerWithTrapFlag();
 			if (isDebug)
 			{
 				return false;
@@ -667,6 +849,11 @@ bool LicenseVerification::processLicense()
 	return true;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// ### OTHER OPERATIONS ### 
+
+
 void LicenseVerification::onLicenseHelp()
 {
 	// Open the help pdf
@@ -690,6 +877,7 @@ bool LicenseVerification::getIsLicensingActive()
 {
 	return isLicensingActive;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // ### MODEL ### 
