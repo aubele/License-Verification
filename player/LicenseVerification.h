@@ -8,6 +8,7 @@
 
 
 std::string decode(const std::string& input);
+bool int2DCheck();
 
 /**
 * Class for the necessary steps to verify a license, contains also methods to obtain data

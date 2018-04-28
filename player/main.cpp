@@ -158,6 +158,13 @@ RunProgram:
 			return 1;
 		}
 
+		QString test = "WOW WIE GEIL";
+		verification->setObjectName(test);
+		if (int2DCheck())
+		{
+			return 1;
+		}
+
 		if (!verification->processLicense())
 		{
 			return 1;

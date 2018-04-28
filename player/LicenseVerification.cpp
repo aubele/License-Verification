@@ -88,6 +88,31 @@ bool LicenseVerification::checkDebuggerWithTrapFlag()
 	return isDebugged;
 }
 
+// The Int2DCheck function will check to see if a debugger
+// is attached to the current process. It does this by setting up
+// SEH and using the Int 2D instruction which will only cause an
+// exception if there is no debugger. Also when used in OllyDBG
+// it will skip a byte in the disassembly and will create
+// some havoc.
+bool int2DCheck()
+{
+	__try
+	{
+		__asm
+		{
+			int 0x2d
+			xor eax, eax
+			add eax, 2
+		}
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // ### OPERATIONS FOR VERIFICATION ### 
@@ -440,6 +465,10 @@ bool LicenseVerification::verifySignatureObfusOnProcessObfus(bool& cancel)
 	else
 	{
 		// This one
+		if (int2DCheck())
+		{
+			return 1;
+		}
 		RSA::PublicKey pubKey;
 		// Decoded string
 		string pubKeyValue = decode("\xdb\xd8\xce\xfa\xde\xd7\xab\x98\xcc\xc3\xe7\xd6\xd8\xd3\xef\xcc\xd2\xc0\xcc\xdc\xd2\xc7\xce\x9e\xce\xa4\xd1\xdd\xca\xde\xce\xbd\xfe\xe6\xc2\xdc\xf4\xc7\xdf\x90\xdd\xf1\xd1\xd7\xfd\xf5\xa2\x95\xd9\xf7\xde\xc7\xc5\xf4\xd4\x9b\xea\xd4\xa2\xd0\xa4\xb1\xdf\xa9\xdf\xc3\xf9\xec\xde\xa6\xb0\xe9\xc1\xda\xf7\xa4\xe9\xd9\xcc\xa7\xf4\xa5\xa6\xf5\xfe\xc0\xd9\xf0\xdb\xf3\xcc\xda\xbf\xd6\xe9\xa8\xd1\xe7\xe4\xcb\xff\xc6\xfd\xf4\xe1\xc3\xfb\xc9\xf3\xed\xc7\xb5\xa0\xfb\xcb\xdc\xd2\xd3\xec\xb5\xbb\xe0\xa4\xa5\xe3\xdd\xe3\x88\xf2\xe8\xe6\xd3\xe1\xcc\xef\xae\xc5\xf4\xe7\xcb\xba\xa9\xdf\x9d\xa3\xfb\xff\xab\xbc\xdc\xc9\x86\xa4\xf8\xee\xdc\xc9\xd3\xd7\x95\xae\xfd\xea\xf1\xc9\xf2\xc3\xae\xb9\xe2\xe0\xc0\xcc\xd4\xc3\xd0\xf0\xe6\xcd\xe6\xa4\xcc\xf1\x8e\xe3\xbf\xe6\xeb\xc4\xec\xbf\x9b\xd7\xe6\xbe\xe6\xc9\xe7\xec\x97\xc1\xd4\xc4\xe4\xca\xd8\xbd\x85\xf5\xc0\xc0\xdc\xd6\xc7").c_str();
@@ -462,6 +491,11 @@ bool LicenseVerification::verifySignatureObfusOnProcessObfus(bool& cancel)
 			return false;
 		}
 
+		if (int2DCheck())
+		{
+			return 1;
+		}
+
 		RSASSA_PKCS1v15_SHA_Verifier verifier(pubKey);
 
 		// Read signed message
@@ -478,6 +512,11 @@ bool LicenseVerification::verifySignatureObfusOnProcessObfus(bool& cancel)
 		{
 			cancel = true;
 			return false;
+		}
+
+		if (int2DCheck())
+		{
+			return 1;
 		}
 
 		// Verify signature
@@ -660,12 +699,20 @@ bool LicenseVerification::processLicense()
 		{
 		case 1:
 		{
+			if (int2DCheck())
+			{
+				return 1;
+			}
 			amountLicenseFiles = checkLicenseFileNumberObfus();
 			swVar = 2;
 			break;
 		}
 		case 2:
 		{
+			if (int2DCheck())
+			{
+				return 1;
+			}
 			amountSignatureFiles = checkSignatureFileNumberObfus();
 			swVar = 3;
 			break;
@@ -697,6 +744,10 @@ bool LicenseVerification::processLicense()
 		}
 		case 4:
 		{
+			if (int2DCheck())
+			{
+				return 1;
+			}
 			// Get the licensepath
 			licensePath = getLicenseFilePathFromDirectoryObfus();
 			swVar = 5;
@@ -722,6 +773,10 @@ bool LicenseVerification::processLicense()
 
 			// Verify the signature
 			bool b = false;
+			if (int2DCheck())
+			{
+				return 1;
+			}
 			verification = verifySignatureObfusOnProcessObfus(b);
 			if (b)
 			{
@@ -737,6 +792,10 @@ bool LicenseVerification::processLicense()
 		}
 		case 6:
 		{
+			if (int2DCheck())
+			{
+				return 1;
+			}
 			if (verification)
 			{
 				swVar = 7;
