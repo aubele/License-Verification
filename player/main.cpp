@@ -106,7 +106,7 @@ PIMAGE_TLS_CALLBACK tls_callback_func = tls_callback;
 
 int main(int argc, char *argv[])
 {
-	if (CheckNtQueryInformationProcess())
+	if (checkNtQueryInformationProcess())
 	{
 		return 1;
 	}
@@ -146,7 +146,7 @@ RunProgram:
 	LicenseVerification* verification = new LicenseVerification;
 	try
 	{
-		if (verification->checkDebuggerWithTrapFlag())
+		if (checkDebuggerWithTrapFlag())
 		{
 			return 1;
 		}
@@ -168,7 +168,7 @@ RunProgram:
 			return 1;
 		}
 
-		if (CheckNtQueryInformationProcess())
+		if (checkNtQueryInformationProcess())
 		{
 			return 1;
 		}
@@ -206,7 +206,7 @@ RunProgram:
 		return 1;
 	}
 
-	if (CheckNtQueryInformationProcess())
+	if (checkNtQueryInformationProcess())
 	{
 		return 1;
 	}

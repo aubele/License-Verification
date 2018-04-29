@@ -8,8 +8,13 @@
 
 
 std::string decode(const std::string& input);
+/**
+*	Checks if a debugger is present, with a trapflag.
+* @return True if a debugger is present, else false.
+*/
+bool checkDebuggerWithTrapFlag();
 bool int2DCheck();
-bool CheckNtQueryInformationProcess();
+bool checkNtQueryInformationProcess();
 
 /**
 * Class for the necessary steps to verify a license, contains also methods to obtain data
@@ -73,16 +78,16 @@ public:
 	* @see verifySignatureObfus()
 	* @return True if the signature is valid, else false.
 	*/
-	bool verifySignatureObfusOnProcessObfus(bool& cancel);
+	bool verifySignatureOnProcessObfus(bool& cancel);
 	/**
 	* Gets the license data from the license file. Only gets called in the verification process
-	* from verifySignatureObfus() or verifySignatureObfusOnProcessObfus().
+	* from verifySignatureObfus() or verifySignatureOnProcessObfus().
 	* @return The license data.
 	*/
 	std::string verifySignatureGetLicenseDataObfus();
 	/**
 	* Gets the signature from the signature file. Only gets called in the verification process
-	* from verifySignatureObfus() or verifySignatureObfusOnProcessObfus().
+	* from verifySignatureObfus() or verifySignatureOnProcessObfus().
 	* @return The signature.
 	*/
 	std::string verifySignatureGetSignatureObfus();
@@ -97,12 +102,6 @@ public:
 	bool getModelFeatureSpeed();
 	bool getModelFeatureColor();
 	bool getModelFeatureHistogram();
-
-	/**
-	*	Checks if a debugger is present, with a trapflag.
-	* @return True if a debugger is present, else false.
-	*/
-	bool checkDebuggerWithTrapFlag();
 
 private:
 	/**

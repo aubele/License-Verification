@@ -67,7 +67,7 @@ std::string decode(const std::string& input)
 	return result;
 }
 
-bool LicenseVerification::checkDebuggerWithTrapFlag()
+bool checkDebuggerWithTrapFlag()
 {
 	bool isDebugged = true;
 	__try
@@ -109,7 +109,7 @@ bool int2DCheck()
 	{
 		return false;
 	}
-
+	
 	return true;
 }
 
@@ -121,18 +121,25 @@ typedef NTSTATUS(NTAPI *pfnNtQueryInformationProcess)(
 	_Out_opt_ PULONG           ReturnLength
 	);
 
-bool CheckNtQueryInformationProcess()
+bool checkNtQueryInformationProcess()
 {
 	const UINT ProcessDebugPort = 7;
 
 	pfnNtQueryInformationProcess NtQueryInformationProcess = NULL;
 	NTSTATUS status;
 	DWORD isDebuggerPresent = 0;
-	HMODULE hNtDll = LoadLibrary(TEXT("ntdll.dll"));
+	// ntdll.dll
+	string dllName = decode("\xf8\xe5\xed\xf2\xff\xb8\xff\xb3\xe3");
+	// string casting made by microsoft
+	std::wstring stemp = std::wstring(dllName.begin(), dllName.end());
+	LPCWSTR ntdll = stemp.c_str();
+	HMODULE hNtDll = LoadLibrary(ntdll);
 
 	if (NULL != hNtDll)
 	{
-		NtQueryInformationProcess = (pfnNtQueryInformationProcess)GetProcAddress(hNtDll, "NtQueryInformationProcess");
+		// NtQueryInformationProcess
+		string ntquery = decode("\xd8\xe5\xd8\xeb\xf6\xe4\xe2\x96\xe1\xf6\xf9\xe3\xe6\xfb\xf9\x96\xf9\xff\xd9\xec\xfc\xf5\xfe\xac\xfc");
+		NtQueryInformationProcess = (pfnNtQueryInformationProcess)GetProcAddress(hNtDll, ntquery.c_str());
 		if (NULL != NtQueryInformationProcess)
 		{
 			status = NtQueryInformationProcess(
@@ -427,14 +434,14 @@ void LicenseVerification::readDataIntoModelObfus()
 // ### LICENSE VERIFICATION ### 
 
 
-bool LicenseVerification::verifySignatureObfusOnProcessObfus(bool& cancel)
+bool LicenseVerification::verifySignatureOnProcessObfus(bool& cancel)
 {
 	if (isLicensingActive == false)
 	{
 		return true;
 	}
 
-	if (CheckNtQueryInformationProcess())
+	if (checkNtQueryInformationProcess())
 	{
 		cancel = true;
 		return false;
@@ -464,7 +471,7 @@ bool LicenseVerification::verifySignatureObfusOnProcessObfus(bool& cancel)
 		publicKey.AssignFrom(privateKey);
 		if (!privateKey.Validate(rng, 3) || !publicKey.Validate(rng, 3))
 		{
-			throw runtime_error("DSA key generation failed");
+			throw runtime_error(decode("\xd2\xc2\xc8\xbe\xf8\xf3\xe2\xff\xe8\xf5\xf8\xf4\xf9\xfb\xf9\x96\xf9\xff\xa9\xf8\xf2\xff\xf7\xba\xeb").c_str());
 		}
 
 		SYSTEMTIME systime5;
@@ -603,7 +610,7 @@ bool LicenseVerification::verifySignatureObfus()
 		publicKey.AssignFrom(privateKey);
 		if (!privateKey.Validate(rng, 3) || !publicKey.Validate(rng, 3))
 		{
-			throw runtime_error("DSA key generation failed");
+			throw runtime_error(decode("\xd2\xc2\xc8\xbe\xf8\xf3\xe2\xff\xe8\xf5\xf8\xf4\xf9\xfb\xf9\x96\xf9\xff\xa9\xf8\xf2\xff\xf7\xba\xeb").c_str());
 		}
 
 		string message = "";
@@ -717,9 +724,6 @@ string LicenseVerification::verifySignatureGetSignatureObfus()
 
 bool LicenseVerification::processLicense()
 {
-	QString start = "Start";
-	this->setObjectName(start);
-
 	SYSTEMTIME systime1;
 	GetSystemTime(&systime1);
 	SystemTimeToFileTime(&systime1, &time1);
@@ -737,7 +741,7 @@ bool LicenseVerification::processLicense()
 
 	bool verification;
 
-	if (CheckNtQueryInformationProcess())
+	if (checkNtQueryInformationProcess())
 	{
 		return false;
 	}
@@ -827,14 +831,14 @@ bool LicenseVerification::processLicense()
 				return false;
 			}
 
-			if (CheckNtQueryInformationProcess())
+			if (checkNtQueryInformationProcess())
 			{
 				return false;
 			}
 
 			// Verify the signature
 			bool cancel = false;
-			verification = verifySignatureObfusOnProcessObfus(cancel);
+			verification = verifySignatureOnProcessObfus(cancel);
 			if (cancel)
 			{
 				return false;
@@ -959,8 +963,6 @@ bool LicenseVerification::processLicense()
 		}
 		}
 	}
-	QString end = "Ende";
-	this->setObjectName(end);
 
 	return true;
 }
