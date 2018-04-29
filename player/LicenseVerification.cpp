@@ -21,12 +21,6 @@
 
 using namespace CryptoPP;
 
-// Crypto++ Library
-#ifdef _DEBUG
-#  pragma comment ( lib, "cryptlibd" )
-#else
-#  pragma comment ( lib, "cryptlib32" )
-#endif
 
 // Global timestamps for easy access
 FILETIME time1,time2,time3,time4,time5,time6;

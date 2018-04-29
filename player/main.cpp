@@ -59,6 +59,13 @@
 #include <exception>
 #include <windows.h>
 
+// Crypto++ Library
+#ifdef _DEBUG
+#  pragma comment ( lib, "cryptlibd" )
+#else
+#  pragma comment ( lib, "cryptlib32" )
+#endif
+
 using namespace std;
 
 
