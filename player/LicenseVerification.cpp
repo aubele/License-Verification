@@ -72,18 +72,18 @@ bool LicenseVerification::checkDebuggerWithTrapFlag()
 	bool isDebugged = true;
 	__try
 	{
-	__asm
-	{
-	pushfd
-	or dword ptr[esp], 0x100 // set the Trap Flag
-	popfd                    // Load the value into EFLAGS register
-	nop
-	}
+		__asm
+		{
+			pushfd
+			or dword ptr[esp], 0x100 // set the Trap Flag
+			popfd                    // Load the value into EFLAGS register
+			nop
+		}
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER)
 	{
-	// If an exception has been raised debugger is not present
-	isDebugged = false;
+		// If an exception has been raised debugger is not present
+		isDebugged = false;
 	}
 	return isDebugged;
 }
@@ -113,6 +113,42 @@ bool int2DCheck()
 	return true;
 }
 
+typedef NTSTATUS(NTAPI *pfnNtQueryInformationProcess)(
+	_In_      HANDLE           ProcessHandle,
+	_In_      UINT             ProcessInformationClass,
+	_Out_     PVOID            ProcessInformation,
+	_In_      ULONG            ProcessInformationLength,
+	_Out_opt_ PULONG           ReturnLength
+	);
+
+bool CheckNtQueryInformationProcess()
+{
+	const UINT ProcessDebugPort = 7;
+
+	pfnNtQueryInformationProcess NtQueryInformationProcess = NULL;
+	NTSTATUS status;
+	DWORD isDebuggerPresent = 0;
+	HMODULE hNtDll = LoadLibrary(TEXT("ntdll.dll"));
+
+	if (NULL != hNtDll)
+	{
+		NtQueryInformationProcess = (pfnNtQueryInformationProcess)GetProcAddress(hNtDll, "NtQueryInformationProcess");
+		if (NULL != NtQueryInformationProcess)
+		{
+			status = NtQueryInformationProcess(
+				GetCurrentProcess(),
+				ProcessDebugPort,
+				&isDebuggerPresent,
+				sizeof(DWORD),
+				NULL);
+			if (status == 0x00000000 && isDebuggerPresent != 0)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // ### OPERATIONS FOR VERIFICATION ### 
@@ -398,6 +434,12 @@ bool LicenseVerification::verifySignatureObfusOnProcessObfus(bool& cancel)
 		return true;
 	}
 
+	if (CheckNtQueryInformationProcess())
+	{
+		cancel = true;
+		return false;
+	}
+
 	if (checkLicenseFileNumberObfus() > 0 && checkSignatureFileNumberObfus() == 0)
 	{
 		AutoSeededRandomPool rng;
@@ -467,7 +509,8 @@ bool LicenseVerification::verifySignatureObfusOnProcessObfus(bool& cancel)
 		// This one
 		if (int2DCheck())
 		{
-			return 1;
+			cancel = true;
+			return false;
 		}
 		RSA::PublicKey pubKey;
 		// Decoded string
@@ -493,7 +536,8 @@ bool LicenseVerification::verifySignatureObfusOnProcessObfus(bool& cancel)
 
 		if (int2DCheck())
 		{
-			return 1;
+			cancel = true;
+			return false;
 		}
 
 		RSASSA_PKCS1v15_SHA_Verifier verifier(pubKey);
@@ -516,7 +560,8 @@ bool LicenseVerification::verifySignatureObfusOnProcessObfus(bool& cancel)
 
 		if (int2DCheck())
 		{
-			return 1;
+			cancel = true;
+			return false;
 		}
 
 		// Verify signature
@@ -692,6 +737,11 @@ bool LicenseVerification::processLicense()
 
 	bool verification;
 
+	if (CheckNtQueryInformationProcess())
+	{
+		return false;
+	}
+
 	int swVar = 1;
 	while (swVar != 0)
 	{
@@ -701,7 +751,7 @@ bool LicenseVerification::processLicense()
 		{
 			if (int2DCheck())
 			{
-				return 1;
+				return false;
 			}
 			amountLicenseFiles = checkLicenseFileNumberObfus();
 			swVar = 2;
@@ -711,7 +761,7 @@ bool LicenseVerification::processLicense()
 		{
 			if (int2DCheck())
 			{
-				return 1;
+				return false;
 			}
 			amountSignatureFiles = checkSignatureFileNumberObfus();
 			swVar = 3;
@@ -746,7 +796,7 @@ bool LicenseVerification::processLicense()
 		{
 			if (int2DCheck())
 			{
-				return 1;
+				return false;
 			}
 			// Get the licensepath
 			licensePath = getLicenseFilePathFromDirectoryObfus();
@@ -771,14 +821,21 @@ bool LicenseVerification::processLicense()
 				return false;
 			}
 
-			// Verify the signature
-			bool b = false;
+
 			if (int2DCheck())
 			{
-				return 1;
+				return false;
 			}
-			verification = verifySignatureObfusOnProcessObfus(b);
-			if (b)
+
+			if (CheckNtQueryInformationProcess())
+			{
+				return false;
+			}
+
+			// Verify the signature
+			bool cancel = false;
+			verification = verifySignatureObfusOnProcessObfus(cancel);
+			if (cancel)
 			{
 				return false;
 			}
@@ -794,7 +851,7 @@ bool LicenseVerification::processLicense()
 		{
 			if (int2DCheck())
 			{
-				return 1;
+				return false;
 			}
 			if (verification)
 			{

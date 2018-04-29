@@ -106,6 +106,11 @@ PIMAGE_TLS_CALLBACK tls_callback_func = tls_callback;
 
 int main(int argc, char *argv[])
 {
+	if (CheckNtQueryInformationProcess())
+	{
+		return 1;
+	}
+
 	QApplication app(argc, argv);
 
 	QCoreApplication::setApplicationName("Player Example");
@@ -158,9 +163,12 @@ RunProgram:
 			return 1;
 		}
 
-		QString test = "WOW WIE GEIL";
-		verification->setObjectName(test);
 		if (int2DCheck())
+		{
+			return 1;
+		}
+
+		if (CheckNtQueryInformationProcess())
 		{
 			return 1;
 		}
@@ -195,6 +203,11 @@ RunProgram:
 
 		//"Lizenz ungueltig"
 		verification->showMessageBox(decode("\xda\xf8\xf3\xfb\xfd\xec\xbb\xaa\xe1\xf7\xe3\xf4\xe7\xee\xe4\x98").c_str(), all.c_str());
+		return 1;
+	}
+
+	if (CheckNtQueryInformationProcess())
+	{
 		return 1;
 	}
 
