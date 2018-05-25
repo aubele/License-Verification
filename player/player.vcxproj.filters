@@ -83,6 +83,9 @@
     <CustomBuild Include="LicenseVerification.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="histogramwidget.cbt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="debug\histogramwidget.moc.cbt">
@@ -138,5 +141,13 @@
     <ClInclude Include="LicenseFileReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Debug\histogramwidget.moc">
+      <Filter>Generated Files</Filter>
+    </None>
+    <None Include="Release\histogramwidget.moc">
+      <Filter>Generated Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

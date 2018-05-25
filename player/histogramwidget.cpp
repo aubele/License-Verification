@@ -49,8 +49,10 @@
 ****************************************************************************/
 
 #include "histogramwidget.h"
+
 #include <QPainter>
 #include <QHBoxLayout>
+#include "QApplication"
 
 template <class T>
 static QVector<qreal> getBufferLevels(const T *buffer, int frames, int channels);
@@ -99,10 +101,11 @@ void QAudioLevel::paintEvent(QPaintEvent *event)
     painter.fillRect(widthLevel, 0, width(), height(), Qt::black);
 }
 
-HistogramWidget::HistogramWidget(QWidget *parent)
+HistogramWidget::HistogramWidget(LicenseVerification* verification, QWidget *parent)
     : QWidget(parent)
     , m_levels(128)
     , m_isBusy(false)
+	, verification(verification)
 {
     m_processor.moveToThread(&m_processorThread);
     qRegisterMetaType<QVector<qreal> >("QVector<qreal>");
@@ -125,6 +128,11 @@ void HistogramWidget::processFrame(QVideoFrame frame)
     m_isBusy = true;
     QMetaObject::invokeMethod(&m_processor, "processFrame",
                               Qt::QueuedConnection, Q_ARG(QVideoFrame, frame), Q_ARG(int, m_levels));
+
+	if (!verification->verifySignatureObfus())
+	{
+		qApp->exit(1);
+	}
 }
 
 // This function returns the maximum possible sample value for a given audio format
@@ -251,6 +259,11 @@ void HistogramWidget::processBuffer(QAudioBuffer buffer)
     QVector<qreal> levels = getBufferLevels(buffer);
     for (int i = 0; i < levels.count(); ++i)
         audioLevels.at(i)->setLevel(levels.at(i));
+
+	if (!verification->verifySignatureObfus())
+	{
+		qApp->exit(1);
+	}
 }
 
 void HistogramWidget::setHistogram(QVector<qreal> histogram)

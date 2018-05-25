@@ -1,4 +1,5 @@
 #include "LicenseModel.h"
+#include "LicenseVerification.h"
 
 
 LicenseModel::LicenseModel()
@@ -18,7 +19,7 @@ const QString LicenseModel::getFirstName()
 
 const QString LicenseModel::getKeyWordFirstName()
 {
-	return "firstName";
+	return decode("\xf0\xf8\xfb\xed\xe7\xd8\xfa\xb2\xea").c_str();
 }
 
 void LicenseModel::setFirstName(const QString& firstName)
@@ -35,7 +36,7 @@ const QString LicenseModel::getLastName()
 
 const QString LicenseModel::getKeyWordLastName()
 {
-	return "lastName";
+	return decode("\xfa\xf0\xfa\xea\xdd\xf7\xf6\xba").c_str();
 }
 
 void LicenseModel::setLastName(const QString& lastName)
@@ -52,7 +53,7 @@ const QString LicenseModel::getEmail()
 
 const QString LicenseModel::getKeyWordEmail()
 {
-	return "email";
+	return decode("\xf3\xfc\xe8\xf7\xff").c_str();
 }
 
 void LicenseModel::setEmail(const QString& email)
@@ -69,7 +70,7 @@ const QString LicenseModel::getCompany()
 
 const QString LicenseModel::getKeyWordCompany()
 {
-	return "company";
+	return decode("\xf5\xfe\xe4\xee\xf2\xf8\xe2").c_str();
 }
 
 void LicenseModel::setCompany(const QString& company)
@@ -86,7 +87,7 @@ const QString LicenseModel::getMac()
 
 const QString LicenseModel::getKeyWordMac()
 {
-	return "mac";
+	return decode("\xfb\xf0\xea").c_str();
 }
 
 void LicenseModel::setMac(const QString& mac)
@@ -103,7 +104,7 @@ bool LicenseModel::getFeatureFullScreen()
 
 const QString LicenseModel::getKeyWordFullScreen()
 {
-	return "fullScreen";
+	return decode("\xf0\xe4\xe5\xf2\xc0\xf5\xe9\xba\xea\xfe").c_str();
 }
 
 void LicenseModel::setFeatureFullScreen(bool fullScreen)
@@ -120,7 +121,7 @@ bool LicenseModel::getFeatureSpeed()
 
 const QString LicenseModel::getKeyWordSpeed()
 {
-	return "speed";
+	return decode("\xe5\xe1\xec\xfb\xf7").c_str();
 }
 
 void LicenseModel::setFeatureSpeed(bool speed)
@@ -137,7 +138,7 @@ bool LicenseModel::getFeatureColor()
 
 const QString LicenseModel::getKeyWordColor()
 {
-	return "color";
+	return decode("\xf5\xfe\xe5\xf1\xe1").c_str();
 }
 
 void LicenseModel::setFeatureColor(bool color)
@@ -153,7 +154,7 @@ bool LicenseModel::getFeatureHistogram()
 }
 const QString LicenseModel::getKeyWordHistogram()
 {
-	return "histogram";
+	return decode("\xfe\xf8\xfa\xea\xfc\xf1\xe9\xbe\xe2").c_str();
 }
 
 void LicenseModel::setFeatureHistogram(bool histogram)
@@ -170,7 +171,7 @@ int LicenseModel::getDuration()
 
 const QString LicenseModel::getKeyWordDuration()
 {
-	return "duration";
+	return decode("\xf2\xe4\xfb\xff\xe7\xff\xf4\xb1").c_str();
 }
 
 void LicenseModel::setDuration(int duration)
@@ -187,7 +188,7 @@ const QDate& LicenseModel::getExpirationDate()
 
 const QString LicenseModel::getKeyWordExpirationDate()
 {
-	return "expirationDate";
+	return decode("\xf3\xe9\xf9\xf7\xe1\xf7\xef\xb6\xe0\xfe\xd2\xf0\xff\xff").c_str();
 }
 
 void LicenseModel::setExpirationDate(const QDate& expirationDate)
@@ -204,7 +205,7 @@ const QString LicenseModel::getCustomerNumber()
 
 const QString LicenseModel::getKeyWordCustomerNumber()
 {
-	return "customerNumber";
+	return decode("\xf5\xe4\xfa\xea\xfc\xfb\xfe\xad\xc1\xe5\xfb\xf3\xee\xe8").c_str();
 }
 
 void LicenseModel::setCustomerNumber(const QString& customerNumber)

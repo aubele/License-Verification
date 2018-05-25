@@ -18,14 +18,9 @@ LicenseMacAdressException::LicenseMacAdressException(const char* what_arg) : Lic
 
 const char * LicenseMacAdressException::what() const throw ()
 {
-	return "Ihre Lizenz ist ungueltig, da die in der Lizenz angegebene Hardware-Adresse "
-		"mit keiner Ihrer eigenen Hardware-Adressen uebereinstimmt!\n"
-		"\n"
-		"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet "
-		"auch moegliche Fehlerloesungen und Informationen, die nuetzlich sein koennten.\n"
-		"\n"
-		"Wenn Sie keine passende Loesung fuer das Problem finden koennen, melden Sie "
-		"sich bitte beim Support!";
+	//"Ihre Lizenz ist ungueltig, da die in der Lizenz angegebene Hardware-Adresse
+	//mit keiner Ihrer eigenen Hardware-Adressen uebereinstimmt!"
+	return "\xdf\xf9\xfb\xfb\xb3\xda\xf2\xa5\xea\xfe\xec\xb1\xe2\xe9\xf9\xdf\xe3\xff\xee\xeb\xf6\xfa\xef\xb6\xe8\xbc\xb6\xf5\xea\xba\xe9\x96\xf3\xb1\xe0\xf0\xb3\xf2\xfe\xad\xaf\xdc\xff\xeb\xee\xf4\xf7\xdf\xf7\xff\xee\xfb\xf4\xf3\xf9\xba\xe1\xf5\xb6\xd9\xea\xe8\xe9\x88\xf7\xe3\xec\xb3\xd2\xf2\xe9\xba\xfc\xe3\xf3\xb1\xe6\xf3\xf9\xdf\xfd\xf4\xe0\xf0\xf6\xe4\xbb\x96\xe7\xe2\xf3\xe3\xab\xff\xe4\x98\xf3\xff\xec\xf0\xb3\xde\xfa\xad\xeb\xe7\xf7\xe3\xee\xb7\xcc\x9b\xe4\xf4\xfa\xed\xf6\xf8\xbb\xaa\xea\xf2\xf3\xe3\xee\xf3\xe3\x8c\xe2\xf8\xe4\xf3\xe7\xb7";
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,14 +31,8 @@ LicenseExpirationDateException::LicenseExpirationDateException(const char* what_
 
 const char * LicenseExpirationDateException::what() const throw ()
 {
-	return "Ihre Lizenz ist ungueltig, da das in der Lizenz angegebene Ablaufdatum bereits "
-		"ueberschritten ist!\n"
-		"\n"
-		"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet "
-		"auch moegliche Fehlerloesungen und Informationen, die nuetzlich sein koennten.\n"
-		"\n"
-		"Wenn Sie keine passende Loesung fuer das Problem finden koennen, melden Sie "
-		"sich bitte beim Support!";
+	//"Ihre Lizenz ist ungueltig, da das in der Lizenz angegebene Ablaufdatum bereits ueberschritten ist!"
+	return "\xdf\xf9\xfb\xfb\xb3\xda\xf2\xa5\xea\xfe\xec\xb1\xe2\xe9\xf9\xdf\xe3\xff\xee\xeb\xf6\xfa\xef\xb6\xe8\xbc\xb6\xf5\xea\xba\xe9\x9e\xe5\xb1\xe0\xf0\xb3\xf2\xfe\xad\xaf\xdc\xff\xeb\xee\xf4\xf7\xdf\xf7\xff\xee\xfb\xf4\xf3\xf9\xba\xe1\xf5\xb6\xd0\xe9\xf6\xec\x8a\xf0\xf5\xe8\xea\xe6\xfb\xbb\xbd\xea\xe2\xf3\xf8\xff\xe9\xad\x8a\xf3\xf3\xec\xec\xe0\xf5\xf3\xad\xe6\xe4\xe2\xf4\xe5\xba\xe4\x8c\xe2\xb0";
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,14 +43,9 @@ LicenseSignatureException::LicenseSignatureException(const char* what_arg) : Lic
 	
 const char * LicenseSignatureException::what() const throw ()
 {
-	return	"Die Signatur und dadurch ihre angegebene Lizenz sind ungueltig. Bitte stellen Sie sicher, "
-		"dass Sie keine Aenderungen in der Signaturdatei, sowie in der Lizenzdatei durchgefuehrt haben.\n"
-		"\n"
-		"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet "
-		"auch moegliche Fehlerloesungen und Informationen, die nuetzlich sein koennten.\n"
-		"\n"
-		"Wenn Sie keine passende Loesung fuer das Problem finden koennen, melden Sie "
-		"sich bitte beim Support!";
+	//"Die Signatur und dadurch ihre angegebene Lizenz sind ungueltig. Bitte stellen Sie sicher, dass Sie
+	//keine Aenderungen in der Signaturdatei, sowie in der Lizenzdatei durchgefuehrt haben."
+	return "\xd2\xf8\xec\xbe\xc0\xff\xfc\xb1\xee\xe4\xe3\xe3\xab\xef\xe3\x9b\xb6\xf5\xe8\xfa\xe6\xe4\xf8\xb7\xaf\xf9\xfe\xe3\xee\xba\xec\x91\xf1\xf4\xee\xfb\xf1\xf3\xf5\xba\xaf\xdc\xff\xeb\xee\xf4\xf7\xdf\xe5\xf8\xe7\xfa\xb3\xe3\xf5\xb8\xfa\xf5\xfa\xe5\xe2\xfd\xa3\xdf\xd4\xf8\xfd\xea\xf6\xb6\xe8\xab\xea\xfc\xfa\xf4\xe5\xba\xde\x96\xf3\xb1\xfa\xf7\xf0\xfe\xfe\xad\xa3\xb0\xf2\xf0\xf8\xe9\xad\xac\xff\xf4\xa9\xf5\xf6\xff\xf5\xba\xaf\xd1\xf3\xff\xef\xff\xff\x8a\xf8\xf6\xec\xf0\xb3\xff\xf5\xff\xeb\xf5\xe4\xb1\xd8\xf3\xea\x91\xf7\xe5\xfc\xec\xf7\xf7\xef\xba\xe6\xbc\xb6\xe2\xe4\xed\xe4\x9a\xb6\xf8\xe7\xbe\xf7\xf3\xe9\xff\xc3\xf9\xec\xf4\xe5\xe0\xe9\x9e\xe2\xf4\xe0\xbe\xf7\xe3\xe9\xbc\xe7\xf7\xf3\xf7\xfe\xff\xe5\x8d\xe2\xb1\xe1\xff\xf1\xf3\xf5\xf1";
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,13 +56,8 @@ LicenseFileNumberException::LicenseFileNumberException(const char* what_arg) : L
 	
 const char * LicenseFileNumberException::what() const throw ()
 {
-	return	"Bitte ueberpruefen Sie ob sich genau eine Datei mit der Endung '*.lic' in dem 'lic'-Ordner befindet.\n"
-		"\n"
-		"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet "
-		"auch moegliche Fehlerloesungen und Informationen, die nuetzlich sein koennten.\n"
-		"\n"
-		"Wenn Sie keine passende Loesung fuer das Problem finden koennen, melden Sie "
-		"sich bitte beim Support!";
+	//"Bitte ueberpruefen Sie ob sich genau eine Datei mit der Endung '*.lic' in dem 'lic'-Ordner befindet."
+	return "\xd4\xf8\xfd\xea\xf6\xb6\xee\xba\xed\xf5\xe4\xe1\xf9\xef\xe8\x99\xf3\xff\xa9\xcd\xfa\xf3\xbb\xb0\xed\xb0\xe5\xf8\xe8\xf2\xad\x98\xf3\xff\xe8\xeb\xb3\xf3\xf2\xb1\xea\xb0\xd2\xf0\xff\xff\xe4\xdf\xfb\xf8\xfd\xbe\xf7\xf3\xe9\xff\xca\xfe\xf2\xe4\xe5\xfd\xad\xd8\xbc\xbf\xe5\xf7\xf0\xb1\xbb\xb6\xe1\xb0\xf2\xf4\xe6\xba\xaa\x93\xff\xf2\xae\xb3\xdc\xe4\xff\xb1\xea\xe2\xb6\xf3\xee\xfc\xe4\x91\xf2\xf4\xfd\xb0";
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -89,11 +68,6 @@ LicenseSignatureFileNumberException::LicenseSignatureFileNumberException(const c
 
 const char * LicenseSignatureFileNumberException::what() const throw ()
 {
-	return	"Bitte ueberpruefen Sie ob sich genau eine Datei mit der Endung '*.sig' in dem 'lic'-Ordner befindet.\n"
-		"\n"
-		"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet "
-		"auch moegliche Fehlerloesungen und Informationen, die nuetzlich sein koennten.\n"
-		"\n"
-		"Wenn Sie keine passende Loesung fuer das Problem finden koennen, melden Sie "
-		"sich bitte beim Support!";
+	//"Bitte ueberpruefen Sie ob sich genau eine Datei mit der Endung '*.sig' in dem 'lic'-Ordner befindet."
+	return "\xd4\xf8\xfd\xea\xf6\xb6\xee\xba\xed\xf5\xe4\xe1\xf9\xef\xe8\x99\xf3\xff\xa9\xcd\xfa\xf3\xbb\xb0\xed\xb0\xe5\xf8\xe8\xf2\xad\x98\xf3\xff\xe8\xeb\xb3\xf3\xf2\xb1\xea\xb0\xd2\xf0\xff\xff\xe4\xdf\xfb\xf8\xfd\xbe\xf7\xf3\xe9\xff\xca\xfe\xf2\xe4\xe5\xfd\xad\xd8\xbc\xbf\xfa\xf7\xf4\xb1\xbb\xb6\xe1\xb0\xf2\xf4\xe6\xba\xaa\x93\xff\xf2\xae\xb3\xdc\xe4\xff\xb1\xea\xe2\xb6\xf3\xee\xfc\xe4\x91\xf2\xf4\xfd\xb0";
 }

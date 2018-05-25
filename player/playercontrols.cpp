@@ -58,7 +58,7 @@
 #include <QComboBox>
 #include <QAudio>
 
-PlayerControls::PlayerControls(QWidget *parent)
+PlayerControls::PlayerControls(LicenseVerification* verification, QWidget *parent)
     : QWidget(parent)
     , playerState(QMediaPlayer::StoppedState)
     , playerMuted(false)
@@ -69,6 +69,7 @@ PlayerControls::PlayerControls(QWidget *parent)
     , muteButton(0)
     , volumeSlider(0)
     , rateBox(0)
+	, verification(verification)
 {
     playButton = new QToolButton(this);
     playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
@@ -123,6 +124,11 @@ PlayerControls::PlayerControls(QWidget *parent)
 
 QMediaPlayer::State PlayerControls::state() const
 {
+	if (!verification->verifySignatureObfus())
+	{
+		qApp->exit(1);
+	}
+
     return playerState;
 }
 
@@ -146,6 +152,11 @@ void PlayerControls::setState(QMediaPlayer::State state)
             break;
         }
     }
+
+	if (!verification->verifySignatureObfus())
+	{
+		qApp->exit(1);
+	}
 }
 
 int PlayerControls::volume() const
@@ -153,6 +164,11 @@ int PlayerControls::volume() const
     qreal linearVolume =  QAudio::convertVolume(volumeSlider->value() / qreal(100),
                                                 QAudio::LogarithmicVolumeScale,
                                                 QAudio::LinearVolumeScale);
+
+	if (!verification->verifySignatureObfus())
+	{
+		qApp->exit(1);
+	}
 
     return qRound(linearVolume * 100);
 }
@@ -164,10 +180,20 @@ void PlayerControls::setVolume(int volume)
                                                     QAudio::LogarithmicVolumeScale);
 
     volumeSlider->setValue(qRound(logarithmicVolume * 100));
+
+	if (!verification->verifySignatureObfus())
+	{
+		qApp->exit(1);
+	}
 }
 
 bool PlayerControls::isMuted() const
 {
+	if (!verification->verifySignatureObfus())
+	{
+		qApp->exit(1);
+	}
+
     return playerMuted;
 }
 
@@ -180,6 +206,11 @@ void PlayerControls::setMuted(bool muted)
                 ? QStyle::SP_MediaVolumeMuted
                 : QStyle::SP_MediaVolume));
     }
+
+	if (!verification->verifySignatureObfus())
+	{
+		qApp->exit(1);
+	}
 }
 
 void PlayerControls::playClicked()
@@ -193,6 +224,11 @@ void PlayerControls::playClicked()
         emit pause();
         break;
     }
+
+	if (!verification->verifySignatureObfus())
+	{
+		qApp->exit(1);
+	}
 }
 
 void PlayerControls::muteClicked()
@@ -202,6 +238,11 @@ void PlayerControls::muteClicked()
 
 qreal PlayerControls::playbackRate() const
 {
+	if (!verification->verifySignatureObfus())
+	{
+		qApp->exit(1);
+	}
+
     return rateBox->itemData(rateBox->currentIndex()).toDouble();
 }
 
@@ -216,6 +257,11 @@ void PlayerControls::setPlaybackRate(float rate)
 
     rateBox->addItem(QString("%1x").arg(rate), QVariant(rate));
     rateBox->setCurrentIndex(rateBox->count() - 1);
+	
+	if (!verification->verifySignatureObfus())
+	{
+		qApp->exit(1);
+	}
 }
 
 void PlayerControls::updateRate()
@@ -235,7 +281,7 @@ void PlayerControls::toggleSpeedBox(bool enable)
 {
 	rateBox->setEnabled(enable);
 	if (enable == false)
-		rateBox->setToolTip("Keine gueltige Lizenz fuer dieses Feature");
+		rateBox->setToolTip(decode("\xdd\xf4\xe0\xf0\xf6\xb6\xfc\xaa\xea\xfc\xe2\xf8\xec\xff\xad\xb3\xff\xeb\xec\xf0\xe9\xb6\xfd\xaa\xea\xe2\xb6\xf5\xe2\xff\xfe\x9a\xe5\xb1\xcf\xfb\xf2\xe2\xee\xad\xea").c_str());
 	else
 		rateBox->setToolTip("");
 }

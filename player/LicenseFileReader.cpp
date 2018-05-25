@@ -1,4 +1,5 @@
 #include "LicenseFileReader.h"
+#include "LicenseVerification.h"
 
 #include "QTextStream"
 
@@ -25,7 +26,7 @@ bool LicenseFileReader::readLicenseFile(QString filePath)
 		// Line after line
 		QString line = in.readLine();
 		// Found a header
-		if (line.startsWith("[") && line.endsWith("]"))
+		if (line.startsWith(decode("\xcd").c_str()) && line.endsWith(decode("\xcb").c_str()))
 		{
 			currentHeader = line;
 			// Remove the brackets
@@ -39,7 +40,7 @@ bool LicenseFileReader::readLicenseFile(QString filePath)
 				if (line.contains("\n") || line != "")
 				{
 					// Split the entry in keyword and value
-					QStringList split = line.split("=");
+					QStringList split = line.split(decode("\xab").c_str());
 					if (split.length() == 2)
 					{
 						QString keyword = split[0];
