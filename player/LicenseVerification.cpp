@@ -1,5 +1,6 @@
 ﻿#include "LicenseVerification.h"
 #include "LicenseExceptions.h"
+#include "AntiReverseEngineering.h"
 
 #include "QByteArray"
 #include "QDirIterator"
@@ -16,7 +17,6 @@
 #include <base64.h>
 #include <files.h>
 
-#include <excpt.h>
 #include <windows.h>
 
 using namespace CryptoPP;
@@ -43,129 +43,21 @@ LicenseVerification::~LicenseVerification()
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-// ### ANTI REVERSE ENGINEERING ### 
-
-
-std::string decode(const std::string& input)
-{
-	// Use std::string, cause bit operations are easier then
-	// choose a power of two length => then compiler can replace "modulo x" by much faster "and (x-1)"   
-	const size_t passwordLength = 16;
-	// at least as long as passwordLength, can be longer, too ...   
-	static const char password[passwordLength] = "invalid pointer";
-	// out = in XOR NOT(password)   
-	std::string result = input;
-	for (size_t i = 0; i < input.length(); i++)
-		result[i] ^= ~password[i % passwordLength];
-
-	return result;
-}
-
-bool checkDebuggerWithTrapFlag()
-{
-	bool isDebugged = true;
-	__try
-	{
-		__asm
-		{
-			pushfd
-			or dword ptr[esp], 0x100 // set the Trap Flag
-			popfd                    // Load the value into EFLAGS register
-			nop
-		}
-	}
-	__except (EXCEPTION_EXECUTE_HANDLER)
-	{
-		// If an exception has been raised debugger is not present
-		isDebugged = false;
-	}
-	return isDebugged;
-}
-
-// The Int2DCheck function will check to see if a debugger
-// is attached to the current process. It does this by setting up
-// SEH and using the Int 2D instruction which will only cause an
-// exception if there is no debugger. Also when used in OllyDBG
-// it will skip a byte in the disassembly and will create
-// some havoc.
-bool int2DCheck()
-{
-	__try
-	{
-		__asm
-		{
-			int 0x2d
-			xor eax, eax
-			add eax, 2
-		}
-	}
-	__except (EXCEPTION_EXECUTE_HANDLER)
-	{
-		return false;
-	}
-	
-	return true;
-}
-
-typedef NTSTATUS(NTAPI *pfnNtQueryInformationProcess)(
-	_In_      HANDLE           ProcessHandle,
-	_In_      UINT             ProcessInformationClass,
-	_Out_     PVOID            ProcessInformation,
-	_In_      ULONG            ProcessInformationLength,
-	_Out_opt_ PULONG           ReturnLength
-	);
-
-bool checkNtQueryInformationProcess()
-{
-	const UINT ProcessDebugPort = 7;
-
-	pfnNtQueryInformationProcess NtQueryInformationProcess = NULL;
-	NTSTATUS status;
-	DWORD isDebuggerPresent = 0;
-	// ntdll.dll
-	string dllName = decode("\xf8\xe5\xed\xf2\xff\xb8\xff\xb3\xe3");
-	// string casting made by microsoft
-	std::wstring stemp = std::wstring(dllName.begin(), dllName.end());
-	LPCWSTR ntdll = stemp.c_str();
-	HMODULE hNtDll = LoadLibrary(ntdll);
-
-	if (NULL != hNtDll)
-	{
-		// NtQueryInformationProcess
-		string ntquery = decode("\xd8\xe5\xd8\xeb\xf6\xe4\xe2\x96\xe1\xf6\xf9\xe3\xe6\xfb\xf9\x96\xf9\xff\xd9\xec\xfc\xf5\xfe\xac\xfc");
-		NtQueryInformationProcess = (pfnNtQueryInformationProcess)GetProcAddress(hNtDll, ntquery.c_str());
-		if (NULL != NtQueryInformationProcess)
-		{
-			status = NtQueryInformationProcess(
-				GetCurrentProcess(),
-				ProcessDebugPort,
-				&isDebuggerPresent,
-				sizeof(DWORD),
-				NULL);
-			if (status == 0x00000000 && isDebuggerPresent != 0)
-			{
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////
 // ### OPERATIONS FOR VERIFICATION ### 
 
 
+// Obfuscated with Opaque Predicate
 int LicenseVerification::checkLicenseFileNumberObfus()
 {
 	int amountLicenseFiles = 0;
-	// opaque predicate
 	QString obf = QDir::currentPath();
 	// "/"
 	if (obf.split(decode("\xb9").c_str()).size() > 0)
 	{
-		// Always this one
+		// This one
 		// Just iterate through the lic directory
 		int counterLicenseFile = 0;
+		// "lic" || "*.lic"
 		QDirIterator itLic(decode("\xfa\xf8\xea").c_str(), QStringList() << decode("\xbc\xbf\xe5\xf7\xf0").c_str(), QDir::Files | QDir::NoDotAndDotDot | QDir::Readable | QDir::NoSymLinks);
 		while (itLic.hasNext())
 		{
@@ -177,6 +69,7 @@ int LicenseVerification::checkLicenseFileNumberObfus()
 	}
 	else
 	{
+		// Never this one
 		QDirIterator itLic(obf, QDir::Files | QDir::NoDotAndDotDot | QDir::Readable | QDir::NoSymLinks);
 		while (itLic.hasNext())
 		{
@@ -188,22 +81,24 @@ int LicenseVerification::checkLicenseFileNumberObfus()
 	}
 }
 
+// Obfuscated with Opaque Predicate
 int LicenseVerification::checkSignatureFileNumberObfus()
 {
-	// opaque predicate
 	int amountSignatureFiles = 0;
 	QString obf2 = QDir::currentPath();
 	if (obf2.size() == 0)
 	{
+		// Never this one
 		amountSignatureFiles = 0;
 		getSignatureFilePathFromDirectoryObfus();
 		return amountSignatureFiles;
 	}
 	else
 	{
-		// Always this one
+		// This one
 		// Just iterate through the lic directory
 		int counterSignature = 0;
+		// "lic" || "*.sig"
 		QDirIterator itSig(decode("\xfa\xf8\xea").c_str(), QStringList() << decode("\xbc\xbf\xfa\xf7\xf4").c_str(), QDir::Files | QDir::NoDotAndDotDot | QDir::Readable);
 		while (itSig.hasNext())
 		{
@@ -215,12 +110,14 @@ int LicenseVerification::checkSignatureFileNumberObfus()
 	}
 }
 
+// Obfuscated with Opaque Predicate
 const QString LicenseVerification::getLicenseFilePathFromDirectoryObfus()
 {
 	if (checkLicenseFileNumberObfus() > 0)
 	{
 		// This one
 		// Get path from lic directory
+		// "lic" || "*.lic"
 		QDirIterator itLic(decode("\xfa\xf8\xea").c_str(), QStringList() << decode("\xbc\xbf\xe5\xf7\xf0").c_str(), QDir::Files | QDir::NoDotAndDotDot | QDir::Readable | QDir::NoSymLinks);
 		while (itLic.hasNext())
 		{
@@ -230,6 +127,7 @@ const QString LicenseVerification::getLicenseFilePathFromDirectoryObfus()
 	}
 	else
 	{
+		// Never this one
 		QString licensePath = "";
 		QString lic = getLicenseFilePathFromDirectoryObfus();
 
@@ -239,13 +137,14 @@ const QString LicenseVerification::getLicenseFilePathFromDirectoryObfus()
 	}
 }
 
+// Obfuscated with Opaque Predicate
 const QString LicenseVerification::getSignatureFilePathFromDirectoryObfus()
 {
-	// Get the licensepath
 	if (checkSignatureFileNumberObfus() > 0)
 	{
 		// This one
 		// Get path from lic directory
+		// "lic" || "*.sig"
 		QDirIterator itSig(decode("\xfa\xf8\xea").c_str(), QStringList() << decode("\xbc\xbf\xfa\xf7\xf4").c_str(), QDir::Files | QDir::NoDotAndDotDot | QDir::Readable);
 		while (itSig.hasNext())
 		{
@@ -255,6 +154,7 @@ const QString LicenseVerification::getSignatureFilePathFromDirectoryObfus()
 	}
 	else
 	{
+		// Never this one
 		QString lic = getLicenseFilePathFromDirectoryObfus();
 		if (checkSignatureFileNumberObfus() > 0)
 			reader->readLicenseFile(lic);
@@ -265,20 +165,24 @@ const QString LicenseVerification::getSignatureFilePathFromDirectoryObfus()
 	}
 }
 
+
+// Obfuscated with Opaque Predicate
 void LicenseVerification::toggleNoLicenseObfus()
 {
 	if (checkLicenseFileNumberObfus() < 1 && checkSignatureFileNumberObfus() < 1)
 	{
 		// This one
+		// Build a string that gets displayed in the warning box
 		//"Sie haben keine aktive Lizenz, deshalb sind keinerlei zusaetzliche Features aktiv."
 		string message1 = decode("\xc5\xf8\xec\xbe\xfb\xf7\xf9\xba\xe1\xb0\xfd\xf4\xe2\xf4\xe8\xdf\xf7\xfa\xfd\xf7\xe5\xf3\xbb\x93\xe6\xea\xf3\xff\xf1\xb6\xad\x9b\xf3\xe2\xe1\xff\xff\xf4\xbb\xac\xe6\xfe\xf2\xb1\xe0\xff\xe4\x91\xf3\xe3\xe5\xfb\xfa\xb6\xe1\xaa\xfc\xf1\xf3\xe5\xf1\xf6\xe4\x9c\xfe\xf4\xa9\xd8\xf6\xf7\xef\xaa\xfd\xf5\xe5\xb1\xea\xf1\xf9\x96\xe0\xbf");
 		//"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet ""Informationen, die nuetzlich sein koennten.
 		string message2 = decode("\xd4\xf8\xfd\xea\xf6\xb6\xf7\xba\xfc\xf5\xf8\xb1\xd8\xf3\xe8\xdf\xf2\xf0\xfa\xbe\xf1\xf3\xf2\xb3\xea\xf7\xf3\xff\xef\xff\xad\xbb\xf9\xfa\xfc\xf3\xf6\xf8\xef\xff\xfa\xfe\xe2\xf4\xf9\xba\xaa\xb7\xf3\xfd\xf9\xb9\xb3\xec\xee\xad\xaf\xdc\xff\xeb\xee\xf4\xf7\x96\xf3\xe3\xfc\xf0\xf4\xb6\xff\xaa\xfd\xf3\xfe\xbf\xab\xde\xe4\x9a\xe5\xf4\xfa\xbe\xf1\xf3\xf2\xb1\xe7\xf1\xfa\xe5\xee\xee\xad\xb6\xf8\xf7\xe6\xec\xfe\xf7\xef\xb6\xe0\xfe\xf3\xff\xa7\xba\xe9\x96\xf3\xb1\xe7\xeb\xf6\xe2\xe1\xb3\xe6\xf3\xfe\xb1\xf8\xff\xe4\x91\xb6\xfa\xe6\xfb\xfd\xf8\xef\xba\xe1\xbe");
 		//"Wenn Sie noch offene Fragen haben oder eine Lizene erwerben wollen, melden Sie sich bitte beim Support!"
 		string message3 = decode("\xc1\xf4\xe7\xf0\xb3\xc5\xf2\xba\xaf\xfe\xf9\xf2\xe3\xba\xe2\x99\xf0\xf4\xe7\xfb\xb3\xd0\xe9\xbe\xe8\xf5\xf8\xb1\xe3\xfb\xef\x9a\xf8\xb1\xe6\xfa\xf6\xe4\xbb\xba\xe6\xfe\xf3\xb1\xc7\xf3\xf7\x9a\xf8\xf4\xa9\xfb\xe1\xe1\xfe\xad\xed\xf5\xf8\xb1\xfc\xf5\xe1\x93\xf3\xff\xa5\xbe\xfe\xf3\xf7\xbb\xea\xfe\xb6\xc2\xe2\xff\xad\x8c\xff\xf2\xe1\xbe\xf1\xff\xef\xab\xea\xb0\xf4\xf4\xe2\xf7\xad\xac\xe3\xe1\xf9\xf1\xe1\xe2\xba");
+		// Build the whole string
 		string all = message1 + "\n" + message2 + "\n" + "\n" + message3;
-
-		// Show a warning
+		// Show the warning
+		// "Keine gueltige Lizenz"
 		showMessageBox(decode("\xdd\xf4\xe0\xf0\xf6\xb6\xfc\xaa\xea\xfc\xe2\xf8\xec\xff\xad\xb3\xff\xeb\xec\xf0\xe9").c_str(),
 			QString::fromStdString(all),
 			QMessageBox::Warning);
@@ -288,6 +192,7 @@ void LicenseVerification::toggleNoLicenseObfus()
 	}
 	else
 	{
+		// Never this one
 		QString sig = getSignatureFilePathFromDirectoryObfus();
 		if (checkLicenseFileNumberObfus() > 0)
 			reader->readLicenseFile(sig);
@@ -299,12 +204,13 @@ void LicenseVerification::toggleNoLicenseObfus()
 	}
 }
 
+// Obfuscated with Opaque Predicate
 bool LicenseVerification::checkMacAdressObfus()
 {
-	// Check mac
-	// Append "t:t" split ":"
+	// Append "t:t" || split ":"
 	if (QDir::currentPath().append(decode("\xe2\xab\xfd").c_str()).split(decode("\xac").c_str()).size() == 0)
 	{
+		// Never this one
 		reader->readLicenseFile(getLicenseFilePathFromDirectoryObfus());
 		if (verifySignatureObfus())
 		{
@@ -320,6 +226,7 @@ bool LicenseVerification::checkMacAdressObfus()
 	else
 	{
 		// This one
+		// Check mac
 		if (!verifySignatureObfus())
 		{
 			throw LicenseSignatureException("");
@@ -345,14 +252,14 @@ bool LicenseVerification::checkMacAdressObfus()
 	}
 }
 
+// Obfuscated with Opaque Predicate
 bool LicenseVerification::checkExpirationDateObfus()
 {
-	QString start = "Start";
-	this->setObjectName(start);
 	QDate obfus = QDate::currentDate();
 	obfus = obfus.addMonths(2);
 	if (obfus == QDate::currentDate())
 	{
+		// Never this one
 		QString lic = getLicenseFilePathFromDirectoryObfus();
 		QDate licenseExpirationDate = model->getExpirationDate();
 		if (QDate::isLeapYear(licenseExpirationDate.year()))
@@ -381,17 +288,20 @@ bool LicenseVerification::checkExpirationDateObfus()
 	}
 }
 
+// Obfuscated with Opaque Predicate
 void LicenseVerification::readDataIntoModelObfus()
 {
 	if (getLicenseFilePathFromDirectoryObfus() != "" && getSignatureFilePathFromDirectoryObfus() != "")
 	{
 		// This one
+		// "Customer" for the next 5
 		model->setFirstName(reader->getSpecificEntryValue(decode("\xd5\xe4\xfa\xea\xfc\xfb\xfe\xad").c_str(), model->getKeyWordFirstName()));
 		model->setLastName(reader->getSpecificEntryValue(decode("\xd5\xe4\xfa\xea\xfc\xfb\xfe\xad").c_str(), model->getKeyWordLastName()));
 		model->setEmail(reader->getSpecificEntryValue(decode("\xd5\xe4\xfa\xea\xfc\xfb\xfe\xad").c_str(), model->getKeyWordEmail()));
 		model->setCompany(reader->getSpecificEntryValue(decode("\xd5\xe4\xfa\xea\xfc\xfb\xfe\xad").c_str(), model->getKeyWordCompany()));
 		model->setCustomerNumber(reader->getSpecificEntryValue(decode("\xd5\xe4\xfa\xea\xfc\xfb\xfe\xad").c_str(), model->getKeyWordCustomerNumber()));
 		// Cast to bool
+		// "Product" for the next 5
 		model->setFeatureFullScreen(reader->getSpecificEntryValue(decode("\xc6\xe3\xe6\xfa\xe6\xf5\xef").c_str(), model->getKeyWordFullScreen()).toInt());
 		// Cast to bool
 		model->setFeatureSpeed(reader->getSpecificEntryValue(decode("\xc6\xe3\xe6\xfa\xe6\xf5\xef").c_str(), model->getKeyWordSpeed()).toInt());
@@ -402,7 +312,9 @@ void LicenseVerification::readDataIntoModelObfus()
 		// Cast to int
 		model->setDuration(reader->getSpecificEntryValue(decode("\xc6\xe3\xe6\xfa\xe6\xf5\xef").c_str(), model->getKeyWordDuration()).toInt());
 		// Cast to QDate
+		// "Product" || "dd.mm.yyyy"
 		model->setExpirationDate(QDate::fromString(reader->getSpecificEntryValue(decode("\xc6\xe3\xe6\xfa\xe6\xf5\xef").c_str(), model->getKeyWordExpirationDate()), decode("\xf2\xf5\xa7\xd3\xde\xb8\xe2\xa6\xf6\xe9").c_str()));
+		// "Licensing"
 		model->setMac(reader->getSpecificEntryValue(decode("\xda\xf8\xea\xfb\xfd\xe5\xf2\xb1\xe8").c_str(), model->getKeyWordMac()));
 
 		if (!verifySignatureObfus())
@@ -412,6 +324,7 @@ void LicenseVerification::readDataIntoModelObfus()
 	}
 	else
 	{
+		// Never this one
 		QStringList list;
 		list << getModelCompany() << getModelCustomerNumber() << getModelExpirationDate().toString(decode("\xf2\xf5\xa7\xd3\xde\xb8\xe2\xa6\xf6\xe9").c_str())
 			<< getModelFirstName() << getModelLastName();
@@ -428,33 +341,13 @@ void LicenseVerification::readDataIntoModelObfus()
 // ### LICENSE VERIFICATION ### 
 
 
+// Obfuscated with Opaque Predicate
 bool LicenseVerification::verifySignatureOnProcessObfus(bool& cancel)
 {
-	if (isLicensingActive == false)
-	{
-		return true;
-	}
-
-	if (checkNtQueryInformationProcess())
-	{
-		cancel = true;
-		return false;
-	}
-
 	if (checkLicenseFileNumberObfus() > 0 && checkSignatureFileNumberObfus() == 0)
 	{
+		// Never this one
 		AutoSeededRandomPool rng;
-
-		SYSTEMTIME systime4;
-		GetSystemTime(&systime4);
-		SystemTimeToFileTime(&systime4, &time4);
-
-		double timeExecution = (time4.dwLowDateTime - time3.dwLowDateTime) / 10000.0;
-		if (timeExecution > 10)
-		{
-			cancel = true;
-			return false;
-		}
 
 		// Generate Private Key
 		DSA::PrivateKey privateKey;
@@ -465,18 +358,7 @@ bool LicenseVerification::verifySignatureOnProcessObfus(bool& cancel)
 		publicKey.AssignFrom(privateKey);
 		if (!privateKey.Validate(rng, 3) || !publicKey.Validate(rng, 3))
 		{
-			throw runtime_error(decode("\xd2\xc2\xc8\xbe\xf8\xf3\xe2\xff\xe8\xf5\xf8\xf4\xf9\xfb\xf9\x96\xf9\xff\xa9\xf8\xf2\xff\xf7\xba\xeb").c_str());
-		}
-
-		SYSTEMTIME systime5;
-		GetSystemTime(&systime5);
-		SystemTimeToFileTime(&systime5, &time5);
-
-		timeExecution = (time5.dwLowDateTime - time4.dwLowDateTime) / 10000.0;
-		if (timeExecution > 10)
-		{
-			cancel = true;
-			return false;
+			throw runtime_error("DSA key generation failed");
 		}
 
 		string message = "";
@@ -491,30 +373,30 @@ bool LicenseVerification::verifySignatureOnProcessObfus(bool& cancel)
 		);
 		bool b = verifier.VerifyMessage((const byte*)message.c_str(),
 			message.length(), (const byte*)signature.c_str(), signature.size());
-		
-		SYSTEMTIME systime6;
-		GetSystemTime(&systime6);
-		SystemTimeToFileTime(&systime6, &time6);
-
-		timeExecution = (time6.dwLowDateTime - time5.dwLowDateTime) / 10000.0;
-		if (timeExecution > 10)
-		{
-			b = true;
-			return false;
-		}
-
 		return b;
 	}
 	else
 	{
 		// This one
+		if (isLicensingActive == false)
+		{
+			return true;
+		}
+
+		if (checkNtQueryInformationProcess())
+		{
+			cancel = true;
+			return false;
+		}
 		if (int2DCheck())
 		{
 			cancel = true;
 			return false;
 		}
+
 		RSA::PublicKey pubKey;
 		// Decoded string
+		//"MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQDORaGFvo/jOfWYVbODeD4A/+RVIRprM0+6NJa5bCAXb4/kmVB/TcZK4LdWGvmUlPf+nSmXxwJJ6jBBAEwj4p24hGnwdyoMrZtqJdqZ13Rb5jv5/JRY+hxMBIZj8lcoZdXq6rvQGNN/fwDx7ZjQl/pzOv2dAw7xZqwHNDRuAB0zcQIBEQ"
 		string pubKeyValue = decode("\xdb\xd8\xce\xfa\xde\xd7\xab\x98\xcc\xc3\xe7\xd6\xd8\xd3\xef\xcc\xd2\xc0\xcc\xdc\xd2\xc7\xce\x9e\xce\xa4\xd1\xdd\xca\xde\xce\xbd\xfe\xe6\xc2\xdc\xf4\xc7\xdf\x90\xdd\xf1\xd1\xd7\xfd\xf5\xa2\x95\xd9\xf7\xde\xc7\xc5\xf4\xd4\x9b\xea\xd4\xa2\xd0\xa4\xb1\xdf\xa9\xdf\xc3\xf9\xec\xde\xa6\xb0\xe9\xc1\xda\xf7\xa4\xe9\xd9\xcc\xa7\xf4\xa5\xa6\xf5\xfe\xc0\xd9\xf0\xdb\xf3\xcc\xda\xbf\xd6\xe9\xa8\xd1\xe7\xe4\xcb\xff\xc6\xfd\xf4\xe1\xc3\xfb\xc9\xf3\xed\xc7\xb5\xa0\xfb\xcb\xdc\xd2\xd3\xec\xb5\xbb\xe0\xa4\xa5\xe3\xdd\xe3\x88\xf2\xe8\xe6\xd3\xe1\xcc\xef\xae\xc5\xf4\xe7\xcb\xba\xa9\xdf\x9d\xa3\xfb\xff\xab\xbc\xdc\xc9\x86\xa4\xf8\xee\xdc\xc9\xd3\xd7\x95\xae\xfd\xea\xf1\xc9\xf2\xc3\xae\xb9\xe2\xe0\xc0\xcc\xd4\xc3\xd0\xf0\xe6\xcd\xe6\xa4\xcc\xf1\x8e\xe3\xbf\xe6\xeb\xc4\xec\xbf\x9b\xd7\xe6\xbe\xe6\xc9\xe7\xec\x97\xc1\xd4\xc4\xe4\xca\xd8\xbd\x85\xf5\xc0\xc0\xdc\xd6\xc7").c_str();
 		StringSource ss(pubKeyValue, true, new Base64Decoder);
 		CryptoPP::ByteQueue bytes;
@@ -529,7 +411,7 @@ bool LicenseVerification::verifySignatureOnProcessObfus(bool& cancel)
 		SystemTimeToFileTime(&systime4, &time4);
 
 		double timeExecution = (time4.dwLowDateTime - time3.dwLowDateTime) / 10000.0;
-		if (timeExecution > 10)
+		if (timeExecution > 20)
 		{
 			cancel = true;
 			return false;
@@ -544,16 +426,27 @@ bool LicenseVerification::verifySignatureOnProcessObfus(bool& cancel)
 		RSASSA_PKCS1v15_SHA_Verifier verifier(pubKey);
 
 		// Read signed message
-		string licenseData = verifySignatureGetLicenseDataObfus();
+		QString licensePath = getLicenseFilePathFromDirectoryObfus();
+		QFile licenseFile(licensePath);
+		if (!licenseFile.open(QIODevice::ReadOnly | QIODevice::Text))
+			return "";
+		QTextStream in(&licenseFile);
+		string licenseData = in.readAll().toStdString();
+
 		// Read signation
-		string signature = verifySignatureGetSignatureObfus();
+		string signature;
+		// Get the signature path as const char* for CryptoPP
+		QString signaturePath = getSignatureFilePathFromDirectoryObfus();
+		QByteArray baSignaturePath = signaturePath.toLatin1();
+		const char* cSignaturePath = baSignaturePath.data();
+		FileSource(cSignaturePath, true, new StringSink(signature));
 
 		SYSTEMTIME systime5;
 		GetSystemTime(&systime5);
 		SystemTimeToFileTime(&systime5, &time5);
 
 		timeExecution = (time5.dwLowDateTime - time4.dwLowDateTime) / 10000.0;
-		if (timeExecution > 10)
+		if (timeExecution > 20)
 		{
 			cancel = true;
 			return false;
@@ -574,7 +467,7 @@ bool LicenseVerification::verifySignatureOnProcessObfus(bool& cancel)
 		SystemTimeToFileTime(&systime6, &time6);
 
 		timeExecution = (time6.dwLowDateTime - time5.dwLowDateTime) / 10000.0;
-		if (timeExecution > 10)
+		if (timeExecution > 20)
 		{
 			cancel = true;
 			return false;
@@ -584,13 +477,9 @@ bool LicenseVerification::verifySignatureOnProcessObfus(bool& cancel)
 	}
 }
 
+// Obfuscated with Opaque Predicate
 bool LicenseVerification::verifySignatureObfus()
 {
-	if (isLicensingActive == false)
-	{
-		return true;
-	}
-
 	if (checkLicenseFileNumberObfus() > 0 && checkSignatureFileNumberObfus() == 0)
 	{
 		AutoSeededRandomPool rng;
@@ -604,7 +493,7 @@ bool LicenseVerification::verifySignatureObfus()
 		publicKey.AssignFrom(privateKey);
 		if (!privateKey.Validate(rng, 3) || !publicKey.Validate(rng, 3))
 		{
-			throw runtime_error(decode("\xd2\xc2\xc8\xbe\xf8\xf3\xe2\xff\xe8\xf5\xf8\xf4\xf9\xfb\xf9\x96\xf9\xff\xa9\xf8\xf2\xff\xf7\xba\xeb").c_str());
+			throw runtime_error(decode("DSA key generation failed").c_str());
 		}
 
 		string message = "";
@@ -623,9 +512,15 @@ bool LicenseVerification::verifySignatureObfus()
 	}
 	else
 	{
+		if (isLicensingActive == false)
+		{
+			return true;
+		}
+
 		// This one
 		RSA::PublicKey pubKey;
 		// Decoded string
+		//"MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQDORaGFvo/jOfWYVbODeD4A/+RVIRprM0+6NJa5bCAXb4/kmVB/TcZK4LdWGvmUlPf+nSmXxwJJ6jBBAEwj4p24hGnwdyoMrZtqJdqZ13Rb5jv5/JRY+hxMBIZj8lcoZdXq6rvQGNN/fwDx7ZjQl/pzOv2dAw7xZqwHNDRuAB0zcQIBEQ"
 		string pubKeyValue = decode("\xdb\xd8\xce\xfa\xde\xd7\xab\x98\xcc\xc3\xe7\xd6\xd8\xd3\xef\xcc\xd2\xc0\xcc\xdc\xd2\xc7\xce\x9e\xce\xa4\xd1\xdd\xca\xde\xce\xbd\xfe\xe6\xc2\xdc\xf4\xc7\xdf\x90\xdd\xf1\xd1\xd7\xfd\xf5\xa2\x95\xd9\xf7\xde\xc7\xc5\xf4\xd4\x9b\xea\xd4\xa2\xd0\xa4\xb1\xdf\xa9\xdf\xc3\xf9\xec\xde\xa6\xb0\xe9\xc1\xda\xf7\xa4\xe9\xd9\xcc\xa7\xf4\xa5\xa6\xf5\xfe\xc0\xd9\xf0\xdb\xf3\xcc\xda\xbf\xd6\xe9\xa8\xd1\xe7\xe4\xcb\xff\xc6\xfd\xf4\xe1\xc3\xfb\xc9\xf3\xed\xc7\xb5\xa0\xfb\xcb\xdc\xd2\xd3\xec\xb5\xbb\xe0\xa4\xa5\xe3\xdd\xe3\x88\xf2\xe8\xe6\xd3\xe1\xcc\xef\xae\xc5\xf4\xe7\xcb\xba\xa9\xdf\x9d\xa3\xfb\xff\xab\xbc\xdc\xc9\x86\xa4\xf8\xee\xdc\xc9\xd3\xd7\x95\xae\xfd\xea\xf1\xc9\xf2\xc3\xae\xb9\xe2\xe0\xc0\xcc\xd4\xc3\xd0\xf0\xe6\xcd\xe6\xa4\xcc\xf1\x8e\xe3\xbf\xe6\xeb\xc4\xec\xbf\x9b\xd7\xe6\xbe\xe6\xc9\xe7\xec\x97\xc1\xd4\xc4\xe4\xca\xd8\xbd\x85\xf5\xc0\xc0\xdc\xd6\xc7").c_str();
 		StringSource ss(pubKeyValue, true, new Base64Decoder);
 		CryptoPP::ByteQueue bytes;
@@ -637,38 +532,6 @@ bool LicenseVerification::verifySignatureObfus()
 
 		RSASSA_PKCS1v15_SHA_Verifier verifier(pubKey);
 
-		// Read signed message
-		string licenseData = verifySignatureGetLicenseDataObfus();
-		// Read signation
-		string signature = verifySignatureGetSignatureObfus();
-
-		// Verify signature
-		bool result = verifier.VerifyMessage((const byte*)licenseData.c_str(),
-			licenseData.length(), (const byte*)signature.c_str(), signature.size());
-
-		// Result
-		return result;
-	}
-}
-
-string LicenseVerification::verifySignatureGetLicenseDataObfus()
-{
-	if (checkLicenseFileNumberObfus() > 0 && getSignatureFilePathFromDirectoryObfus() == "")
-	{
-		QDir dir = QDir::current();
-		QString s = getSignatureFilePathFromDirectoryObfus();
-		if (getIsLicensingActive())
-			dir.setPath(s);
-
-		reader->readLicenseFile(dir.path());
-		readDataIntoModelObfus();
-
-		string ret = s.toStdString();
-		return ret;
-	}
-	else
-	{
-		// This one
 		// Read signed message
 		QString licensePath = getLicenseFilePathFromDirectoryObfus();
 		QFile licenseFile(licensePath);
@@ -678,36 +541,20 @@ string LicenseVerification::verifySignatureGetLicenseDataObfus()
 		QTextStream in(&licenseFile);
 		string licenseData = in.readAll().toStdString();
 
-		return licenseData;
-	}
-}
-
-string LicenseVerification::verifySignatureGetSignatureObfus()
-{
-	// + "t:t"
-	if (getLicenseFilePathFromDirectoryObfus() + decode("\xe2\xab\xfd").c_str() != QDir::currentPath())
-	{
-		// This one
 		// Read signation
 		string signature;
-
 		// Get the signature path as const char* for CryptoPP
 		QString signaturePath = getSignatureFilePathFromDirectoryObfus();
 		QByteArray baSignaturePath = signaturePath.toLatin1();
 		const char* cSignaturePath = baSignaturePath.data();
 		FileSource(cSignaturePath, true, new StringSink(signature));
 
-		return signature;
-	}
-	else
-	{
-		QString s = getLicenseFilePathFromDirectoryObfus();
-		if (getIsLicensingActive())
-			reader->readLicenseFile(s);
+		// Verify signature
+		bool result = verifier.VerifyMessage((const byte*)licenseData.c_str(),
+			licenseData.length(), (const byte*)signature.c_str(), signature.size());
 
-		readDataIntoModelObfus();
-		string ret = s.toStdString();
-		return ret;
+		// Result
+		return result;
 	}
 }
 
@@ -716,6 +563,7 @@ string LicenseVerification::verifySignatureGetSignatureObfus()
 // ### MAIN PROCESS METHOD ### 
 
 
+// This method got obfuscated with Control Flow Flattening
 bool LicenseVerification::processLicense()
 {
 	SYSTEMTIME systime1;
@@ -730,9 +578,7 @@ bool LicenseVerification::processLicense()
 
 	int amountLicenseFiles;
 	int amountSignatureFiles;
-
 	QString licensePath;
-
 	bool verification;
 
 	if (checkNtQueryInformationProcess())
@@ -772,7 +618,7 @@ bool LicenseVerification::processLicense()
 			SystemTimeToFileTime(&systime2, &time2);
 
 			double timeExecution = (time2.dwLowDateTime - time1.dwLowDateTime) / 10000.0;
-			if (timeExecution > 5)
+			if (timeExecution > 15)
 			{
 				return false;
 			}
@@ -814,7 +660,7 @@ bool LicenseVerification::processLicense()
 			SystemTimeToFileTime(&systime3, &time3);
 
 			double timeExecution = (time3.dwLowDateTime - time2.dwLowDateTime) / 10000.0;
-			if (timeExecution > 5)
+			if (timeExecution > 15)
 			{
 				return false;
 			}
@@ -970,6 +816,7 @@ void LicenseVerification::onLicenseHelp()
 {
 	// Open the help pdf
 	QString path = QDir::currentPath();
+	//"/LicenseHelp.pdf"
 	path.append(decode("\xb9\xdd\xe0\xfd\xf6\xf8\xe8\xba\xc7\xf5\xfa\xe1\xa5\xea\xe9\x99").c_str());
 	QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 }
@@ -977,6 +824,7 @@ void LicenseVerification::onLicenseHelp()
 void LicenseVerification::showMessageBox(QString title, QString errorText, QMessageBox::Icon iconEnum /*= QMessageBox::Critical*/)
 {
 	// Show a critical message box
+	// "Help"
 	QPushButton* licenseHelp = new QPushButton(decode("\xde\xf4\xe5\xee").c_str());
 	connect(licenseHelp, SIGNAL(clicked()), this, SLOT(onLicenseHelp()));
 	QMessageBox msgBox(iconEnum, title, errorText, QMessageBox::Ok);

@@ -1,5 +1,6 @@
 #include "LicenseModel.h"
 #include "LicenseVerification.h"
+#include "AntiReverseEngineering.h"
 
 
 LicenseModel::LicenseModel()
@@ -16,12 +17,10 @@ const QString LicenseModel::getFirstName()
 {
 	return firstName;
 }
-
 const QString LicenseModel::getKeyWordFirstName()
 {
 	return decode("\xf0\xf8\xfb\xed\xe7\xd8\xfa\xb2\xea").c_str();
 }
-
 void LicenseModel::setFirstName(const QString& firstName)
 {
 	this->firstName = firstName;
@@ -36,6 +35,7 @@ const QString LicenseModel::getLastName()
 
 const QString LicenseModel::getKeyWordLastName()
 {
+	// "lastName"
 	return decode("\xfa\xf0\xfa\xea\xdd\xf7\xf6\xba").c_str();
 }
 
@@ -53,6 +53,7 @@ const QString LicenseModel::getEmail()
 
 const QString LicenseModel::getKeyWordEmail()
 {
+	// "email"
 	return decode("\xf3\xfc\xe8\xf7\xff").c_str();
 }
 
@@ -70,6 +71,7 @@ const QString LicenseModel::getCompany()
 
 const QString LicenseModel::getKeyWordCompany()
 {
+	// "company"
 	return decode("\xf5\xfe\xe4\xee\xf2\xf8\xe2").c_str();
 }
 
@@ -87,6 +89,7 @@ const QString LicenseModel::getMac()
 
 const QString LicenseModel::getKeyWordMac()
 {
+	// "mac"
 	return decode("\xfb\xf0\xea").c_str();
 }
 
@@ -104,6 +107,7 @@ bool LicenseModel::getFeatureFullScreen()
 
 const QString LicenseModel::getKeyWordFullScreen()
 {
+	// "fullScreen"
 	return decode("\xf0\xe4\xe5\xf2\xc0\xf5\xe9\xba\xea\xfe").c_str();
 }
 
@@ -121,6 +125,7 @@ bool LicenseModel::getFeatureSpeed()
 
 const QString LicenseModel::getKeyWordSpeed()
 {
+	// "speed"
 	return decode("\xe5\xe1\xec\xfb\xf7").c_str();
 }
 
@@ -138,6 +143,7 @@ bool LicenseModel::getFeatureColor()
 
 const QString LicenseModel::getKeyWordColor()
 {
+	// "color"
 	return decode("\xf5\xfe\xe5\xf1\xe1").c_str();
 }
 
@@ -154,6 +160,7 @@ bool LicenseModel::getFeatureHistogram()
 }
 const QString LicenseModel::getKeyWordHistogram()
 {
+	// "histogram"
 	return decode("\xfe\xf8\xfa\xea\xfc\xf1\xe9\xbe\xe2").c_str();
 }
 
@@ -171,6 +178,7 @@ int LicenseModel::getDuration()
 
 const QString LicenseModel::getKeyWordDuration()
 {
+	// "duration"
 	return decode("\xf2\xe4\xfb\xff\xe7\xff\xf4\xb1").c_str();
 }
 
@@ -188,6 +196,7 @@ const QDate& LicenseModel::getExpirationDate()
 
 const QString LicenseModel::getKeyWordExpirationDate()
 {
+	// "expirationDate"
 	return decode("\xf3\xe9\xf9\xf7\xe1\xf7\xef\xb6\xe0\xfe\xd2\xf0\xff\xff").c_str();
 }
 
@@ -205,6 +214,7 @@ const QString LicenseModel::getCustomerNumber()
 
 const QString LicenseModel::getKeyWordCustomerNumber()
 {
+	// "customerNumber"
 	return decode("\xf5\xe4\xfa\xea\xfc\xfb\xfe\xad\xc1\xe5\xfb\xf3\xee\xe8").c_str();
 }
 

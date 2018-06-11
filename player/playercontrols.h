@@ -116,7 +116,7 @@ private:
     QComboBox *rateBox;
 
 	/**
-	* Verification object.
+	* Verification object, needed for additional signature verification calls.
 	*/
 	LicenseVerification* verification;
 };

@@ -7,14 +7,6 @@
 #include "QMessageBox"
 
 
-std::string decode(const std::string& input);
-/**
-*	Checks if a debugger is present, with a trapflag.
-* @return True if a debugger is present, else false.
-*/
-bool checkDebuggerWithTrapFlag();
-bool int2DCheck();
-bool checkNtQueryInformationProcess();
 
 /**
 * Class for the necessary steps to verify a license, contains also methods to obtain data
@@ -29,6 +21,9 @@ public:
 	* if licensing is active.
 	*/
 	LicenseVerification();
+	/**
+	* Destructor.
+	*/
 	~LicenseVerification();
 
 	/**
@@ -37,14 +32,14 @@ public:
 	* the validation of the signature, the mac adress and the expirationdate.
 	* This method should always get called right after creating the LicenseVerification object.
 	* Throws LicenseExceptions, if the verification fails.
-	* @see checkLicenseFileNumber()
-	* @see checkSignatureFileNumber()
-	* @see getLicenseFilePathFromDirectory()
-	* @see verifySignature()
-	* @see readDataIntoModel()
-	* @see checkMacAdress()
-	* @see checkExpirationDate()
-	* @see toggleNoLicense()
+	* @see checkLicenseFileNumberObfus()
+	* @see checkSignatureFileNumberObfus()
+	* @see getLicenseFilePathFromDirectoryObfus()
+	* @see verifySignatureOnProcessObfus()
+	* @see readDataIntoModelObfus()
+	* @see checkMacAdressObfus()
+	* @see checkExpirationDateObfus()
+	* @see toggleNoLicenseObfus()
 	*/
 	bool processLicense();
 	/**
@@ -65,7 +60,8 @@ public:
 
 	/**
 	* Checks, with the CryptoPP library, if the signature in the signaturefile for the licensefile
-	* is valid.
+	* is valid. This method gets called on multiple locations in this software to assure that the 
+	* main signature verification was not patched.
 	* @see getLicenseFilePathFromDirectory()
 	* @see getSignatureFilePathFromDirectory()
 	* @return True if the signature is valid, else false.
@@ -75,22 +71,11 @@ public:
 	* Same like verifySignatureObfus(), but with a boolean reference so the verification process can
 	* get canceled without throwing an exception. Only gets called in processLicense.
 	* @param cancel Shows if the verification process failed and no exception should be triggered.
-	* @see verifySignatureObfus()
+	* @see getLicenseFilePathFromDirectory()
+	* @see getSignatureFilePathFromDirectory()
 	* @return True if the signature is valid, else false.
 	*/
 	bool verifySignatureOnProcessObfus(bool& cancel);
-	/**
-	* Gets the license data from the license file. Only gets called in the verification process
-	* from verifySignatureObfus() or verifySignatureOnProcessObfus().
-	* @return The license data.
-	*/
-	std::string verifySignatureGetLicenseDataObfus();
-	/**
-	* Gets the signature from the signature file. Only gets called in the verification process
-	* from verifySignatureObfus() or verifySignatureOnProcessObfus().
-	* @return The signature.
-	*/
-	std::string verifySignatureGetSignatureObfus();
 
 	// All those methods just return values from the model
 	const QString getModelFirstName();
@@ -159,7 +144,7 @@ private:
 	LicenseFileReader* reader;
 	/**
 	* Private member to determine if the licensing is active. This is mainly important since
-	* the view gets changed, if there is a licensefile.
+	* the view changes, if there is a licensefile.
 	* Accessible from outside through getIsLicensingActive().
 	* @see getIsLicensingActive()
 	*/

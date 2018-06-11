@@ -90,7 +90,8 @@ public:
     void addToPlaylist(const QList<QUrl> urls);
 
 	/**
-	* Returns a boolean, to check if the player object passed the test on construction.
+	* Returns a boolean, based on the multiple signature verification calls, to check if the player 
+	* object passed the test on construction.
 	*/
 	bool getPassedTest() const;
 
@@ -148,7 +149,8 @@ private:
 	/**
 	* Toggles the color-button and sets a tooltip if it get's deactivated.
 	* @param enable True to activate, false to deactivate the feature.
-	*/void toggleColorFeature(bool enable);
+	*/
+	void toggleColorFeature(bool enable);
 	/**
 	* Toggles the histogram-widgets.
 	* @param enable True to activate, false to deactivate the feature.
@@ -187,7 +189,8 @@ private:
 	bool passedTest;
 
 	/**
-	* Verification object, mainly used here to get all the nessecary data from the model.
+	* Verification object, mainly used here to get all the nessecary data from the model and the
+	* additional signature checks.
 	*/
 	LicenseVerification* verification;
 };

@@ -1,5 +1,6 @@
 #include "LicenseFileReader.h"
 #include "LicenseVerification.h"
+#include "AntiReverseEngineering.h"
 
 #include "QTextStream"
 
@@ -26,6 +27,7 @@ bool LicenseFileReader::readLicenseFile(QString filePath)
 		// Line after line
 		QString line = in.readLine();
 		// Found a header
+		// "[" || "]"
 		if (line.startsWith(decode("\xcd").c_str()) && line.endsWith(decode("\xcb").c_str()))
 		{
 			currentHeader = line;
@@ -40,6 +42,7 @@ bool LicenseFileReader::readLicenseFile(QString filePath)
 				if (line.contains("\n") || line != "")
 				{
 					// Split the entry in keyword and value
+					// "="
 					QStringList split = line.split(decode("\xab").c_str());
 					if (split.length() == 2)
 					{

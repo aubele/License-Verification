@@ -271,6 +271,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AntiReverseEngineering.cpp" />
     <ClCompile Include="Debug\moc_LicenseVerification.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -533,6 +534,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AntiReverseEngineering.h" />
     <ClInclude Include="LicenseExceptions.h" />
     <ClInclude Include="LicenseFileReader.h" />
     <ClInclude Include="LicenseModel.h" />

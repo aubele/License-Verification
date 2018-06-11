@@ -53,6 +53,7 @@
 
 #include "playlistmodel.h"
 #include "histogramwidget.h"
+#include "AntiReverseEngineering.h"
 
 #include <QMediaService>
 #include <QMediaPlaylist>

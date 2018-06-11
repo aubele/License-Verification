@@ -50,6 +50,7 @@
 // Added a method to deactivate the speedbox-feature according to the license | by: Fabio Aubele
 
 #include "playercontrols.h"
+#include "AntiReverseEngineering.h"
 
 #include <QBoxLayout>
 #include <QSlider>
@@ -281,6 +282,7 @@ void PlayerControls::toggleSpeedBox(bool enable)
 {
 	rateBox->setEnabled(enable);
 	if (enable == false)
+		//"Keine gueltige Lizenz fuer dieses Feature"
 		rateBox->setToolTip(decode("\xdd\xf4\xe0\xf0\xf6\xb6\xfc\xaa\xea\xfc\xe2\xf8\xec\xff\xad\xb3\xff\xeb\xec\xf0\xe9\xb6\xfd\xaa\xea\xe2\xb6\xf5\xe2\xff\xfe\x9a\xe5\xb1\xcf\xfb\xf2\xe2\xee\xad\xea").c_str());
 	else
 		rateBox->setToolTip("");

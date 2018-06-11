@@ -49,6 +49,7 @@
 ****************************************************************************/
 
 #include "player.h"
+#include "AntiReverseEngineering.h"
 #include "LicenseVerification.h"
 
 #include <QApplication>
@@ -69,7 +70,10 @@
 using namespace std;
 
 
-// Explained in p. 2 below
+/**
+* TLS Callback as a Anti-Debugger-Method, implements the IsDebuggerPresent()-function 
+* from the Windows API in Assemblercode.
+*/
 void NTAPI tls_callback(PVOID DllHandle, DWORD dwReason, PVOID)
 {
 	__asm
@@ -77,25 +81,22 @@ void NTAPI tls_callback(PVOID DllHandle, DWORD dwReason, PVOID)
 		mov eax, dword ptr fs:[0x18]
 		mov eax, dword ptr[eax + 0x30]
 		cmp byte ptr[eax + 2], 0
-
 		jne Exit
 		jmp Run
 	}
-	Exit:
-		TerminateProcess(GetCurrentProcess(), 1);
-	Run:
-		;
+	Exit: TerminateProcess(GetCurrentProcess(), 1);
+	Run: ;
 }
 
+// Needed to import tls callback
 #ifdef _WIN64
-#pragma comment (linker, "/INCLUDE:_tls_used")  // See p. 1 below
-#pragma comment (linker, "/INCLUDE:tls_callback_func")  // See p. 3 below
+#pragma comment (linker, "/INCLUDE:_tls_used")
+#pragma comment (linker, "/INCLUDE:tls_callback_func")
 #else
-#pragma comment (linker, "/INCLUDE:__tls_used")  // See p. 1 below
-#pragma comment (linker, "/INCLUDE:_tls_callback_func")  // See p. 3 below
+#pragma comment (linker, "/INCLUDE:__tls_used")
+#pragma comment (linker, "/INCLUDE:_tls_callback_func")
 #endif
 
-// Explained in p. 3 below
 #ifdef _WIN64
 #pragma const_seg(".CRT$XLF")
 EXTERN_C const
@@ -108,7 +109,7 @@ PIMAGE_TLS_CALLBACK tls_callback_func = tls_callback;
 #pragma const_seg()
 #else
 #pragma data_seg()
-#endif //_WIN64
+#endif
 
 
 int main(int argc, char *argv[])
@@ -124,6 +125,7 @@ int main(int argc, char *argv[])
 	QCoreApplication::setOrganizationName("QtProject");
 	QCoreApplication::setApplicationVersion(QT_VERSION_STR);
 
+	// IsDebuggerPresent()-function from the Windows API in Assemblercode
 	__asm
 	{
 		mov eax, dword ptr fs : [0x18]
@@ -144,6 +146,7 @@ RunProgram:
 	parser.addPositionalArgument("url", "The URL to open.");
 	parser.process(app);
 
+	// Time measurement as Anti-Debug
 	SYSTEMTIME systime1;
 	GetSystemTime(&systime1);
 	FILETIME time1;
@@ -162,10 +165,10 @@ RunProgram:
 		GetSystemTime(&systime2);
 		FILETIME time2;
 		SystemTimeToFileTime(&systime2, &time2);
-
-		// In milliseconds
+		// Get difference in milliseconds
 		double timeExecution = (time2.dwLowDateTime - time1.dwLowDateTime) / 10000.0;
-		if (timeExecution > 5)
+		// Check if time is higher then a measured harcoded value
+		if (timeExecution > 15)
 		{
 			return 1;
 		}
@@ -184,28 +187,18 @@ RunProgram:
 		{
 			return 1;
 		}
-
-		SYSTEMTIME systime3;
-		GetSystemTime(&systime3);
-		FILETIME time3;
-		SystemTimeToFileTime(&systime3, &time3);
-
-		timeExecution = (time3.dwLowDateTime - time2.dwLowDateTime) / 10000.0;
-		if (timeExecution > 75)
-		{
-			return 1;
-		}
 	}
 	catch (LicenseException& licExcp)
 	{
 		// Show the description in a critical messagebox
-
-		// Different part of the exception description
+		// This is the part of the message which is depending on the thrown exception
 		string message1 = decode(licExcp.what());
+		// The next two parts are always the same for every exception
 		//"Bitte lesen Sie das beilegende Dokument unter 'Help' zur Lizenzierung durch. Dieses beinhaltet auch moegliche Fehlerloesungen und Informationen, die nuetzlich sein koennten."
 		string message2 = decode("\xd4\xf8\xfd\xea\xf6\xb6\xf7\xba\xfc\xf5\xf8\xb1\xd8\xf3\xe8\xdf\xf2\xf0\xfa\xbe\xf1\xf3\xf2\xb3\xea\xf7\xf3\xff\xef\xff\xad\xbb\xf9\xfa\xfc\xf3\xf6\xf8\xef\xff\xfa\xfe\xe2\xf4\xf9\xba\xaa\xb7\xf3\xfd\xf9\xb9\xb3\xec\xee\xad\xaf\xdc\xff\xeb\xee\xf4\xf7\x96\xf3\xe3\xfc\xf0\xf4\xb6\xff\xaa\xfd\xf3\xfe\xbf\xab\xde\xe4\x9a\xe5\xf4\xfa\xbe\xf1\xf3\xf2\xb1\xe7\xf1\xfa\xe5\xee\xee\xad\x9e\xe3\xf2\xe1\xbe\xfe\xf9\xfe\xb8\xe3\xf9\xf5\xf9\xee\xba\xcb\x9a\xfe\xfd\xec\xec\xff\xf9\xfe\xac\xfa\xfe\xf1\xf4\xe5\xba\xf8\x91\xf2\xb1\xc0\xf0\xf5\xf9\xe9\xb2\xee\xe4\xff\xfe\xe5\xff\xe3\xd3\xb6\xf5\xe0\xfb\xb3\xf8\xee\xba\xfb\xea\xfa\xf8\xe8\xf2\xad\x8c\xf3\xf8\xe7\xbe\xf8\xf9\xfe\xb1\xe1\xe4\xf3\xff\xa5");
 		//"Wenn Sie keine passende Loesung fuer das Problem finden koennen, melden Sie sich bitte beim Support!"
 		string message3 = decode("\xc1\xf4\xe7\xf0\xb3\xc5\xf2\xba\xaf\xfb\xf3\xf8\xe5\xff\xad\x8f\xf7\xe2\xfa\xfb\xfd\xf2\xfe\xff\xc3\xff\xf3\xe2\xfe\xf4\xea\xdf\xf0\xe4\xec\xec\xb3\xf2\xfa\xac\xaf\xc0\xe4\xfe\xe9\xf6\xe8\x92\xb6\xf7\xe0\xf0\xf7\xf3\xf5\xff\xe4\xff\xf3\xff\xe5\xff\xe3\xd3\xb6\xfc\xec\xf2\xf7\xf3\xf5\xff\xdc\xf9\xf3\xb1\xf8\xf3\xee\x97\xb6\xf3\xe0\xea\xe7\xf3\xbb\xbd\xea\xf9\xfb\xb1\xd8\xef\xfd\x8f\xf9\xe3\xfd\xbf");
+		//Build the string
 		string all = message1 + "\n\n" + message2 + "\n\n" + message3;
 
 		//"Lizenz ungueltig"

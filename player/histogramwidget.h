@@ -96,7 +96,7 @@ private:
     bool m_isBusy;
     QVector<QAudioLevel *> audioLevels;
 	/**
-	* Verification object.
+	* Verification object, needed for additional signature verification calls.
 	*/
 	LicenseVerification* verification;
 };
